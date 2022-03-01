@@ -4,7 +4,7 @@
 
 rootProject.name = 'cert-d-java'
 
-include 'pgpainless-core',
-        'pgpainless-sop',
-        'pgpainless-cli'
+include 'pgp-cert-d-java',
+        'pgp-cert-d-java-jdbc-sqlite-lookup',
+        'pgp-certificate-store'
 

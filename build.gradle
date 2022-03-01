@@ -37,18 +37,6 @@ allprojects {
         onlyIf { !sourceSets.main.allSource.files.isEmpty() }
     }
 
-    // For library modules, enable android api compatibility check
-    if (it.name != 'cli') {
-        // animalsniffer
-        apply plugin: 'ru.vyarus.animalsniffer'
-        dependencies {
-            signature "net.sf.androidscents.signature:android-api-level-${minAndroidSdk}:2.3.3_r2@signature"
-        }
-        animalsniffer {
-            sourceSets = [sourceSets.main]
-        }
-    }
-
     // checkstyle
     checkstyle {
         toolVersion = '8.18'
@@ -74,7 +62,6 @@ allprojects {
         slf4jVersion = '1.7.32'
         logbackVersion = '1.2.9'
         junitVersion = '5.8.2'
-        sopJavaVersion = '1.2.0'
         rootConfigDir = new File(rootDir, 'config')
         gitCommit = getGitCommit()
         isContinuousIntegrationEnvironment = Boolean.parseBoolean(System.getenv('CI'))
@@ -145,15 +132,15 @@ subprojects {
                 artifact javadocJar
                 artifact testsJar
                 pom {
-                    name = 'PGPainless'
-                    description = 'Simple to use OpenPGP API for Java based on Bouncycastle'
-                    url = 'https://github.com/pgpainless/pgpainless'
-                    inceptionYear = '2018'
+                    name = 'Cert-D-Java'
+                    description = 'Shared PGP Certificate Directory for Java'
+                    url = 'https://github.com/pgpainless/cert-d-java'
+                    inceptionYear = '2022'
 
                     scm {
-                        url = 'https://github.com/pgpainless/pgpainless'
-                        connection = 'scm:https://github.com/pgpainless/pgpainless'
-                        developerConnection = 'scm:git://github.com/pgpainless/pgpainless.git'
+                        url = 'https://github.com/pgpainless/cert-d-java'
+                        connection = 'scm:https://github.com/pgpainless/cert-d-java'
+                        developerConnection = 'scm:git://github.com/pgpainless/cert-d-java.git'
                     }
 
                     licenses {

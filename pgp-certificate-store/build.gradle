@@ -12,13 +12,22 @@ repositories {
     mavenCentral()
 }
 
+apply plugin: 'ru.vyarus.animalsniffer'
+
 dependencies {
+    // animal sniffer
+    signature "net.sf.androidscents.signature:android-api-level-${minAndroidSdk}:2.3.3_r2@signature"
+
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
     // Logging
     api "org.slf4j:slf4j-api:$slf4jVersion"
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
+}
+
+animalsniffer {
+    sourceSets = [sourceSets.main]
 }
 
 test {

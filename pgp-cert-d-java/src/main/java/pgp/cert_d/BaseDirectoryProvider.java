@@ -5,7 +5,6 @@
 package pgp.cert_d;
 
 import java.io.File;
-import java.nio.file.Paths;
 
 public class BaseDirectoryProvider {
 
@@ -26,21 +25,38 @@ public class BaseDirectoryProvider {
         String STORE_NAME = "pgp.cert.d";
         if (osName.contains("win")) {
             // %APPDATA%\Roaming\pgp.cert.d
-            return Paths.get(System.getenv("APPDATA"), "Roaming", STORE_NAME).toFile();
+            String app_data = System.getenv("APPDATA");
+            if (app_data == null) {
+                throw new AssertionError("Cannot determine APPDATA directory.");
+            }
+            File roaming = new File(app_data, "Roaming");
+            return new File(roaming, STORE_NAME);
         }
 
         if (osName.contains("nux")) {
             // $XDG_DATA_HOME/pgp.cert.d
             String xdg_data_home = System.getenv("XDG_DATA_HOME");
             if (xdg_data_home != null) {
-                return Paths.get(xdg_data_home, STORE_NAME).toFile();
+                return new File(xdg_data_home, STORE_NAME);
+            }
+            String user_home = System.getProperty("user.home");
+            if (user_home == null) {
+                throw new AssertionError("Cannot determine user.home directory.");
             }
             // $HOME/.local/share/pgp.cert.d
-            return Paths.get(System.getProperty("user.home"), ".local", "share", STORE_NAME).toFile();
+            File local = new File(user_home, ".local");
+            File share = new File(local, "share");
+            return new File(share, STORE_NAME);
         }
 
         if (osName.contains("mac")) {
-            return Paths.get(System.getenv("HOME"), "Library", "Application Support", STORE_NAME).toFile();
+            String home = System.getenv("HOME");
+            if (home == null) {
+                throw new AssertionError("Cannot determine HOME directory.");
+            }
+            File library = new File(home, "Library");
+            File applicationSupport = new File(library, "Application Support");
+            return new File(applicationSupport, STORE_NAME);
         }
 
         throw new IllegalArgumentException("Unknown OS " + osName);
