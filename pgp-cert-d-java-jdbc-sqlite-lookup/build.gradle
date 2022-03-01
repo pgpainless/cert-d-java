@@ -1,0 +1,29 @@
+// SPDX-FileCopyrightText: 2022 Paul Schaub <vanitasvitae@fsfe.org>
+//
+// SPDX-License-Identifier: Apache-2.0
+
+plugins {
+    id 'java-library'
+}
+
+group 'org.pgpainless'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+
+    // Logging
+    testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
+
+    implementation project(":pgp-cert-d-java")
+    api 'org.xerial:sqlite-jdbc:3.36.0.3'
+}
+
+test {
+    useJUnitPlatform()
+}
