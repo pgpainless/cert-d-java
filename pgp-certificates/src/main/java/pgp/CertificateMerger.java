@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pgp.certificate_store;
+package pgp;
 
 import java.io.IOException;
 
 /**
  * Merge a given certificate (update) with an existing certificate.
  */
-public interface MergeCallback {
+public interface CertificateMerger {
 
     /**
      * Merge the given certificate data with the existing certificate and return the result.

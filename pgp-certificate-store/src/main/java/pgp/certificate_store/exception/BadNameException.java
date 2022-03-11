@@ -5,7 +5,7 @@
 package pgp.certificate_store.exception;
 
 /**
- * Provided name was neither a valid fingerprint, nor a known special name.
+ * Thrown when a bad name for a cert was used.
  */
 public class BadNameException extends Exception {
 

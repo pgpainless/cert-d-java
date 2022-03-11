@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pgp.certificate_store;
+package pgp;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +11,7 @@ import java.io.InputStream;
  * Interface definition for a class that can read {@link Certificate Certificates} from binary
  * {@link InputStream InputStreams}.
  */
-public interface CertificateReaderBackend {
+public interface CertificateReader {
 
     /**
      * Read a {@link Certificate} from the given {@link InputStream}.

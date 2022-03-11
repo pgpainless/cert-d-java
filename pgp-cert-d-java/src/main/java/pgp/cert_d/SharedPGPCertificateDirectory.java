@@ -4,14 +4,14 @@
 
 package pgp.cert_d;
 
+import pgp.Certificate;
+import pgp.CertificateMerger;
+import pgp.certificate_store.exception.BadDataException;
+import pgp.certificate_store.exception.BadNameException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
-
-import pgp.certificate_store.exception.BadDataException;
-import pgp.certificate_store.exception.BadNameException;
-import pgp.certificate_store.Certificate;
-import pgp.certificate_store.MergeCallback;
 
 public interface SharedPGPCertificateDirectory {
 
@@ -29,16 +29,16 @@ public interface SharedPGPCertificateDirectory {
     Certificate getBySpecialNameIfChanged(String specialName, String tag)
             throws IOException, BadNameException, BadDataException;
 
-    Certificate insert(InputStream data, MergeCallback merge)
+    Certificate insert(InputStream data, CertificateMerger merge)
             throws IOException, BadDataException, InterruptedException;
 
-    Certificate tryInsert(InputStream data, MergeCallback merge)
+    Certificate tryInsert(InputStream data, CertificateMerger merge)
             throws IOException, BadDataException;
 
-    Certificate insertWithSpecialName(String specialName, InputStream data, MergeCallback merge)
+    Certificate insertWithSpecialName(String specialName, InputStream data, CertificateMerger merge)
             throws IOException, BadDataException, BadNameException, InterruptedException;
 
-    Certificate tryInsertWithSpecialName(String specialName, InputStream data, MergeCallback merge)
+    Certificate tryInsertWithSpecialName(String specialName, InputStream data, CertificateMerger merge)
             throws IOException, BadDataException, BadNameException;
 
     Iterator<Certificate> items();

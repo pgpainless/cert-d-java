@@ -6,5 +6,6 @@ rootProject.name = 'cert-d-java'
 
 include 'pgp-cert-d-java',
         'pgp-cert-d-java-jdbc-sqlite-lookup',
-        'pgp-certificate-store'
+        'pgp-certificate-store',
+        'pgp-certificates'
 

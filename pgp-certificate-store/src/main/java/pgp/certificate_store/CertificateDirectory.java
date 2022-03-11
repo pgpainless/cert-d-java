@@ -4,6 +4,8 @@
 
 package pgp.certificate_store;
 
+import pgp.Certificate;
+import pgp.CertificateMerger;
 import pgp.certificate_store.exception.BadDataException;
 import pgp.certificate_store.exception.BadNameException;
 
@@ -50,12 +52,12 @@ public interface CertificateDirectory {
 
     /**
      * Insert a certificate into the store.
-     * If an instance of the certificate is already present in the store, the given {@link MergeCallback} will be
+     * If an instance of the certificate is already present in the store, the given {@link CertificateMerger} will be
      * used to merge both the existing and the new instance of the {@link Certificate}. The resulting merged certificate
      * will be stored in the store and returned.
      *
      * This method will block until a write-lock on the store can be acquired. If you cannot afford blocking,
-     * consider to use {@link #tryInsertCertificate(InputStream, MergeCallback)} instead.
+     * consider to use {@link #tryInsertCertificate(InputStream, CertificateMerger)} instead.
      *
      * @param data input stream containing the new certificate instance
      * @param merge callback for merging with an existing certificate instance
@@ -64,12 +66,12 @@ public interface CertificateDirectory {
      * @throws IOException in case of an IO-error
      * @throws InterruptedException in case the inserting thread gets interrupted
      */
-    Certificate insertCertificate(InputStream data, MergeCallback merge)
+    Certificate insertCertificate(InputStream data, CertificateMerger merge)
             throws IOException, InterruptedException, BadDataException;
 
     /**
      * Insert a certificate into the store.
-     * If an instance of the certificate is already present in the store, the given {@link MergeCallback} will be
+     * If an instance of the certificate is already present in the store, the given {@link CertificateMerger} will be
      * used to merge both the existing and the new instance of the {@link Certificate}. The resulting merged certificate
      * will be stored in the store and returned.
      *
@@ -84,19 +86,19 @@ public interface CertificateDirectory {
      *
      * @throws IOException in case of an IO-error
      */
-    Certificate tryInsertCertificate(InputStream data, MergeCallback merge)
+    Certificate tryInsertCertificate(InputStream data, CertificateMerger merge)
             throws IOException, BadDataException;
 
     /**
      * Insert a certificate into the store.
      * The certificate will be stored under the given special name instead of its fingerprint.
      *
-     * If an instance of the certificate is already present under the special name in the store, the given {@link MergeCallback} will be
+     * If an instance of the certificate is already present under the special name in the store, the given {@link CertificateMerger} will be
      * used to merge both the existing and the new instance of the {@link Certificate}. The resulting merged certificate
      * will be stored in the store and returned.
      *
      * This method will block until a write-lock on the store can be acquired. If you cannot afford blocking,
-     * consider to use {@link #tryInsertCertificateBySpecialName(String, InputStream, MergeCallback)}  instead.
+     * consider to use {@link #tryInsertCertificateBySpecialName(String, InputStream, CertificateMerger)}  instead.
      *
      * @param data input stream containing the new certificate instance
      * @param merge callback for merging with an existing certificate instance
@@ -104,14 +106,14 @@ public interface CertificateDirectory {
      *
      * @throws IOException in case of an IO-error
      */
-    Certificate insertCertificateBySpecialName(String specialName, InputStream data, MergeCallback merge)
+    Certificate insertCertificateBySpecialName(String specialName, InputStream data, CertificateMerger merge)
             throws IOException, InterruptedException, BadDataException, BadNameException;
 
     /**
      * Insert a certificate into the store.
      * The certificate will be stored under the given special name instead of its fingerprint.
      *
-     * If an instance of the certificate is already present under the special name in the store, the given {@link MergeCallback} will be
+     * If an instance of the certificate is already present under the special name in the store, the given {@link CertificateMerger} will be
      * used to merge both the existing and the new instance of the {@link Certificate}. The resulting merged certificate
      * will be stored in the store and returned.
      *
@@ -126,7 +128,7 @@ public interface CertificateDirectory {
      *
      * @throws IOException in case of an IO-error
      */
-    Certificate tryInsertCertificateBySpecialName(String specialName, InputStream data, MergeCallback merge)
+    Certificate tryInsertCertificateBySpecialName(String specialName, InputStream data, CertificateMerger merge)
             throws IOException, BadDataException, BadNameException;
 
     /**

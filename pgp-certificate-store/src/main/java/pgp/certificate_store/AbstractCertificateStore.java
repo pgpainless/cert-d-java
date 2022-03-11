@@ -6,6 +6,7 @@ package pgp.certificate_store;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pgp.Certificate;
 import pgp.certificate_store.exception.BadDataException;
 import pgp.certificate_store.exception.BadNameException;
 

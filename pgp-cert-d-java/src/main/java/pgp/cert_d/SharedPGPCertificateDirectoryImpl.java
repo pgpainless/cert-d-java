@@ -16,32 +16,32 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import pgp.Certificate;
+import pgp.CertificateMerger;
+import pgp.CertificateReader;
 import pgp.certificate_store.exception.BadDataException;
 import pgp.certificate_store.exception.BadNameException;
 import pgp.certificate_store.exception.NotAStoreException;
-import pgp.certificate_store.Certificate;
-import pgp.certificate_store.CertificateReaderBackend;
-import pgp.certificate_store.MergeCallback;
 
 public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDirectory {
 
     private final FilenameResolver resolver;
     private final LockingMechanism writeLock;
-    private final CertificateReaderBackend certificateReaderBackend;
+    private final CertificateReader certificateReaderBackend;
 
     public SharedPGPCertificateDirectoryImpl(BackendProvider backendProvider)
             throws NotAStoreException {
         this(backendProvider.provideCertificateReaderBackend());
     }
 
-    public SharedPGPCertificateDirectoryImpl(CertificateReaderBackend certificateReaderBackend)
+    public SharedPGPCertificateDirectoryImpl(CertificateReader certificateReaderBackend)
             throws NotAStoreException {
         this(
                 BaseDirectoryProvider.getDefaultBaseDir(),
                 certificateReaderBackend);
     }
 
-    public SharedPGPCertificateDirectoryImpl(File baseDirectory, CertificateReaderBackend certificateReaderBackend)
+    public SharedPGPCertificateDirectoryImpl(File baseDirectory, CertificateReader certificateReaderBackend)
             throws NotAStoreException {
         this(
                 certificateReaderBackend,
@@ -50,7 +50,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
     }
 
     public SharedPGPCertificateDirectoryImpl(
-            CertificateReaderBackend certificateReaderBackend,
+            CertificateReader certificateReaderBackend,
             FilenameResolver filenameResolver,
             LockingMechanism writeLock)
             throws NotAStoreException {
@@ -131,7 +131,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
     }
 
     @Override
-    public Certificate insert(InputStream data, MergeCallback merge)
+    public Certificate insert(InputStream data, CertificateMerger merge)
             throws IOException, BadDataException, InterruptedException {
         writeLock.lockDirectory();
 
@@ -142,7 +142,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
     }
 
     @Override
-    public Certificate tryInsert(InputStream data, MergeCallback merge)
+    public Certificate tryInsert(InputStream data, CertificateMerger merge)
             throws IOException, BadDataException {
         if (!writeLock.tryLockDirectory()) {
             return null;
@@ -154,7 +154,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
         return certificate;
     }
 
-    private Certificate _insert(InputStream data, MergeCallback merge)
+    private Certificate _insert(InputStream data, CertificateMerger merge)
             throws IOException, BadDataException {
         Certificate newCertificate = certificateReaderBackend.readCertificate(data);
         Certificate existingCertificate;
@@ -196,7 +196,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
     }
 
     @Override
-    public Certificate insertWithSpecialName(String specialName, InputStream data, MergeCallback merge)
+    public Certificate insertWithSpecialName(String specialName, InputStream data, CertificateMerger merge)
             throws IOException, BadNameException, BadDataException, InterruptedException {
         writeLock.lockDirectory();
 
@@ -207,7 +207,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
     }
 
     @Override
-    public Certificate tryInsertWithSpecialName(String specialName, InputStream data, MergeCallback merge)
+    public Certificate tryInsertWithSpecialName(String specialName, InputStream data, CertificateMerger merge)
             throws IOException, BadNameException, BadDataException {
         if (!writeLock.tryLockDirectory()) {
             return null;
@@ -219,7 +219,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
         return certificate;
     }
 
-    private Certificate _insertSpecial(String specialName, InputStream data, MergeCallback merge)
+    private Certificate _insertSpecial(String specialName, InputStream data, CertificateMerger merge)
             throws IOException, BadNameException, BadDataException {
         Certificate newCertificate = certificateReaderBackend.readCertificate(data);
         Certificate existingCertificate = getBySpecialName(specialName);
