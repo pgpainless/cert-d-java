@@ -8,6 +8,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * The {@link SubkeyLookup} class defines an interface for recording and looking up, to which certificates
+ * a certain subkey belongs to.
+ *
+ * For a basic implementation it is enough to implement CR (out of CRUD) operations.
+ */
 public interface SubkeyLookup {
 
     /**

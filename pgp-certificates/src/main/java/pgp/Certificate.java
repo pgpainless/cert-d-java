@@ -10,8 +10,8 @@ import java.util.Set;
 
 public abstract class Certificate {
     /**
-     * Return the fingerprint of the certificate as 40 lowercase hex characters.
-     * TODO: Allow OpenPGP V5 fingerprints
+     * Return the fingerprint of the certificate as lowercase hex characters.
+     * OpenPGP v4 fingerprints consist of 40 characters, while OpenPGP v5 fingerprints consist of 64.
      *
      * @return fingerprint
      */
