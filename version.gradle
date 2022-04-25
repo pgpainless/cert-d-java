@@ -11,5 +11,6 @@ allprojects {
         slf4jVersion = '1.7.36'
         logbackVersion = '1.2.11'
         junitVersion = '5.8.2'
+        sqliteJdbcVersion = '3.36.0.3'
     }
 }

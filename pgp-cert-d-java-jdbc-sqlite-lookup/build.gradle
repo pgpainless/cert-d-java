@@ -21,7 +21,7 @@ dependencies {
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
 
     implementation project(":pgp-cert-d-java")
-    api 'org.xerial:sqlite-jdbc:3.36.0.3'
+    api "org.xerial:sqlite-jdbc:$sqliteJdbcVersion"
 }
 
 test {
