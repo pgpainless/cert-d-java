@@ -19,6 +19,8 @@ public interface MergeCallback {
      * @param data certificate
      * @param existing optional already existing copy of the certificate
      * @return merged certificate
+     *
+     * @throws IOException in case of an IO error
      */
     Certificate merge(Certificate data, Certificate existing) throws IOException;
 

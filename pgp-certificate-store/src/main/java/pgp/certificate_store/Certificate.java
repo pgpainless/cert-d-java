@@ -21,6 +21,7 @@ public abstract class Certificate {
      * Return an {@link InputStream} of the binary representation of the certificate.
      *
      * @return input stream
+     * @throws IOException in case of an IO error
      */
     public abstract InputStream getInputStream() throws IOException;
 
@@ -29,8 +30,15 @@ public abstract class Certificate {
      * The tag is a checksum calculated over the binary representation of the certificate.
      *
      * @return tag
+     * @throws IOException in case of an IO error
      */
     public abstract String getTag() throws IOException;
 
+    /**
+     * Return a {@link Set} containing key-ids of subkeys.
+     *
+     * @return subkeys
+     * @throws IOException in case of an IO error
+     */
     public abstract Set<Long> getSubkeyIds() throws IOException;
 }

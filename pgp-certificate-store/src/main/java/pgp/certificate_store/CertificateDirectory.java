@@ -30,6 +30,8 @@ public interface CertificateDirectory {
      * @return certificate or null
      *
      * @throws IOException in case of an IO-error
+     * @throws BadNameException if the identifier is invalid
+     * @throws BadDataException if the certificate file contains invalid data
      */
     Certificate getCertificate(String identifier)
             throws IOException, BadNameException, BadDataException;
@@ -44,6 +46,8 @@ public interface CertificateDirectory {
      * @return changed certificate or null
      *
      * @throws IOException in case of an IO-error
+     * @throws BadNameException if the identifier is invalid
+     * @throws BadDataException if the certificate file contains invalid data
      */
     Certificate getCertificateIfChanged(String identifier, String tag)
             throws IOException, BadNameException, BadDataException;
@@ -63,6 +67,7 @@ public interface CertificateDirectory {
      *
      * @throws IOException in case of an IO-error
      * @throws InterruptedException in case the inserting thread gets interrupted
+     * @throws BadDataException if the data stream does not contain valid OpenPGP data
      */
     Certificate insertCertificate(InputStream data, MergeCallback merge)
             throws IOException, InterruptedException, BadDataException;
@@ -83,6 +88,7 @@ public interface CertificateDirectory {
      * @return merged certificate or null if the store cannot be locked
      *
      * @throws IOException in case of an IO-error
+     * @throws BadDataException if the data stream does not contain valid OpenPGP data
      */
     Certificate tryInsertCertificate(InputStream data, MergeCallback merge)
             throws IOException, BadDataException;
@@ -98,11 +104,15 @@ public interface CertificateDirectory {
      * This method will block until a write-lock on the store can be acquired. If you cannot afford blocking,
      * consider to use {@link #tryInsertCertificateBySpecialName(String, InputStream, MergeCallback)}  instead.
      *
+     * @param specialName special name of the certificate
      * @param data input stream containing the new certificate instance
      * @param merge callback for merging with an existing certificate instance
      * @return merged certificate or null if the store cannot be locked
      *
      * @throws IOException in case of an IO-error
+     * @throws InterruptedException if the thread is interrupted
+     * @throws BadDataException if the certificate file does not contain valid OpenPGP data
+     * @throws BadNameException if the special name is unknown
      */
     Certificate insertCertificateBySpecialName(String specialName, InputStream data, MergeCallback merge)
             throws IOException, InterruptedException, BadDataException, BadNameException;
@@ -120,11 +130,14 @@ public interface CertificateDirectory {
      * However, if the write-lock is available, this method will acquire the lock, write to the store, release the lock
      * and return the written certificate.
      *
+     * @param specialName special name for the certificate
      * @param data input stream containing the new certificate instance
      * @param merge callback for merging with an existing certificate instance
      * @return merged certificate or null if the store cannot be locked
      *
      * @throws IOException in case of an IO-error
+     * @throws BadDataException if the data stream does not contain valid OpenPGP data
+     * @throws BadNameException if the special name is not known
      */
     Certificate tryInsertCertificateBySpecialName(String specialName, InputStream data, MergeCallback merge)
             throws IOException, BadDataException, BadNameException;

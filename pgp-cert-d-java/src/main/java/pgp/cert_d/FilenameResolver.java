@@ -28,7 +28,8 @@ public class FilenameResolver {
      *
      * @param fingerprint fingerprint
      * @return absolute certificate file location
-     * @throws BadNameException
+     *
+     * @throws BadNameException if the given fingerprint string is not a fingerprint
      */
     public File getCertFileByFingerprint(String fingerprint) throws BadNameException {
         if (!isFingerprint(fingerprint)) {
@@ -41,6 +42,15 @@ public class FilenameResolver {
         return file;
     }
 
+    /**
+     * Calculate the file location for the certification addressed using the given special name.
+     * For known special names, see {@link SpecialNames}.
+     *
+     * @param specialName special name (e.g. "trust-root")
+     * @return absolute certificate file location
+     *
+     * @throws BadNameException in case the given special name is not known
+     */
     public File getCertFileBySpecialName(String specialName) throws BadNameException {
         if (!isSpecialName(specialName)) {
             throw new BadNameException();

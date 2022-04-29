@@ -16,6 +16,8 @@ public interface SubkeyLookup {
      *
      * @param subkeyId subkey id
      * @return fingerprint of the certificate
+     *
+     * @throws IOException in case of an IO error
      */
     Set<String> getCertificateFingerprintsForSubkeyId(long subkeyId) throws IOException;
 
@@ -25,6 +27,7 @@ public interface SubkeyLookup {
      *
      * @param certificate certificate fingerprint
      * @param subkeyIds subkey ids
+     *
      * @throws IOException in case of an IO error
      */
     void storeCertificateSubkeyIds(String certificate, List<Long> subkeyIds) throws IOException;
