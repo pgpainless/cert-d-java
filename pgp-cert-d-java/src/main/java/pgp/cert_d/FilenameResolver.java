@@ -51,9 +51,10 @@ public class FilenameResolver {
      *
      * @throws BadNameException in case the given special name is not known
      */
-    public File getCertFileBySpecialName(String specialName) throws BadNameException {
+    public File getCertFileBySpecialName(String specialName)
+            throws BadNameException {
         if (!isSpecialName(specialName)) {
-            throw new BadNameException();
+            throw new BadNameException(String.format("%s is not a known special name", specialName));
         }
 
         return new File(getBaseDirectory(), specialName);
