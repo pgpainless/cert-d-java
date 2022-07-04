@@ -4,6 +4,6 @@
 
 package pgp.certificate_store;
 
-public interface CertificateStore extends CertificateDirectory, SubkeyLookup, TrustRootStore {
+public interface CertificateStore extends CertificateDirectory, SubkeyLookup {
 
 }
