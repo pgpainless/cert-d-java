@@ -97,7 +97,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
 
     @Override
     public Certificate getBySpecialName(String specialName)
-            throws IOException, BadNameException {
+            throws IOException, BadNameException, BadDataException {
         File certFile = resolver.getCertFileBySpecialName(specialName);
         if (!certFile.exists()) {
             return null;
@@ -122,7 +122,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
 
     @Override
     public Certificate getBySpecialNameIfChanged(String specialName, String tag)
-            throws IOException, BadNameException {
+            throws IOException, BadNameException, BadDataException {
         Certificate certificate = getBySpecialName(specialName);
         if (certificate.getTag().equals(tag)) {
             return null;

@@ -4,6 +4,8 @@
 
 package pgp.certificate_store;
 
+import pgp.certificate_store.exception.BadDataException;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -20,7 +22,8 @@ public interface CertificateReaderBackend {
      * @return certificate object
      *
      * @throws IOException in case of an IO error
+     * @throws BadDataException in case that the input stream does not contain OpenPGP certificate data
      */
-    Certificate readCertificate(InputStream inputStream) throws IOException;
+    Certificate readCertificate(InputStream inputStream) throws IOException, BadDataException;
 
 }
