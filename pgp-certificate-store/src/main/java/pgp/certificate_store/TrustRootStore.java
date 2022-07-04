@@ -74,7 +74,6 @@ public interface TrustRootStore {
      * @return merged key
      *
      * @throws IOException in case of an IO error
-     * @throws InterruptedException in case the inserting thread gets interrupted
      * @throws BadDataException if the data stream does not contain a valid OpenPGP key
      */
     Key tryInsertTrustRoot(InputStream data, KeyMerger keyMerger)
