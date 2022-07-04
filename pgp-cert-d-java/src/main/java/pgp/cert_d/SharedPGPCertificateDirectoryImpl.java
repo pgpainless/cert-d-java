@@ -21,7 +21,7 @@ import pgp.certificate_store.exception.BadNameException;
 import pgp.certificate_store.exception.NotAStoreException;
 import pgp.certificate_store.Certificate;
 import pgp.certificate_store.CertificateReaderBackend;
-import pgp.certificate_store.MergeCallback;
+import pgp.certificate_store.CertificateMerger;
 
 public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDirectory {
 
@@ -131,7 +131,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
     }
 
     @Override
-    public Certificate insert(InputStream data, MergeCallback merge)
+    public Certificate insert(InputStream data, CertificateMerger merge)
             throws IOException, BadDataException, InterruptedException {
         writeLock.lockDirectory();
 
@@ -142,7 +142,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
     }
 
     @Override
-    public Certificate tryInsert(InputStream data, MergeCallback merge)
+    public Certificate tryInsert(InputStream data, CertificateMerger merge)
             throws IOException, BadDataException {
         if (!writeLock.tryLockDirectory()) {
             return null;
@@ -154,7 +154,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
         return certificate;
     }
 
-    private Certificate _insert(InputStream data, MergeCallback merge)
+    private Certificate _insert(InputStream data, CertificateMerger merge)
             throws IOException, BadDataException {
         Certificate newCertificate = certificateReaderBackend.readCertificate(data);
         Certificate existingCertificate;
@@ -196,7 +196,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
     }
 
     @Override
-    public Certificate insertWithSpecialName(String specialName, InputStream data, MergeCallback merge)
+    public Certificate insertWithSpecialName(String specialName, InputStream data, CertificateMerger merge)
             throws IOException, BadNameException, BadDataException, InterruptedException {
         writeLock.lockDirectory();
 
@@ -207,7 +207,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
     }
 
     @Override
-    public Certificate tryInsertWithSpecialName(String specialName, InputStream data, MergeCallback merge)
+    public Certificate tryInsertWithSpecialName(String specialName, InputStream data, CertificateMerger merge)
             throws IOException, BadNameException, BadDataException {
         if (!writeLock.tryLockDirectory()) {
             return null;
@@ -219,7 +219,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
         return certificate;
     }
 
-    private Certificate _insertSpecial(String specialName, InputStream data, MergeCallback merge)
+    private Certificate _insertSpecial(String specialName, InputStream data, CertificateMerger merge)
             throws IOException, BadNameException, BadDataException {
         Certificate newCertificate = certificateReaderBackend.readCertificate(data);
         Certificate existingCertificate = getBySpecialName(specialName);

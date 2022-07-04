@@ -7,7 +7,7 @@ package pgp.cert_d;
 import pgp.certificate_store.exception.BadDataException;
 import pgp.certificate_store.exception.BadNameException;
 import pgp.certificate_store.Certificate;
-import pgp.certificate_store.MergeCallback;
+import pgp.certificate_store.CertificateMerger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -127,7 +127,7 @@ public class CachingSharedPGPCertificateDirectoryWrapper
     }
 
     @Override
-    public Certificate insert(InputStream data, MergeCallback merge)
+    public Certificate insert(InputStream data, CertificateMerger merge)
             throws IOException, BadDataException, InterruptedException {
         Certificate certificate = underlyingCertificateDirectory.insert(data, merge);
         remember(certificate.getFingerprint(), certificate);
@@ -135,7 +135,7 @@ public class CachingSharedPGPCertificateDirectoryWrapper
     }
 
     @Override
-    public Certificate tryInsert(InputStream data, MergeCallback merge)
+    public Certificate tryInsert(InputStream data, CertificateMerger merge)
             throws IOException, BadDataException {
         Certificate certificate = underlyingCertificateDirectory.tryInsert(data, merge);
         if (certificate != null) {
@@ -145,7 +145,7 @@ public class CachingSharedPGPCertificateDirectoryWrapper
     }
 
     @Override
-    public Certificate insertWithSpecialName(String specialName, InputStream data, MergeCallback merge)
+    public Certificate insertWithSpecialName(String specialName, InputStream data, CertificateMerger merge)
             throws IOException, BadDataException, BadNameException, InterruptedException {
         Certificate certificate = underlyingCertificateDirectory.insertWithSpecialName(specialName, data, merge);
         remember(specialName, certificate);
@@ -153,7 +153,7 @@ public class CachingSharedPGPCertificateDirectoryWrapper
     }
 
     @Override
-    public Certificate tryInsertWithSpecialName(String specialName, InputStream data, MergeCallback merge)
+    public Certificate tryInsertWithSpecialName(String specialName, InputStream data, CertificateMerger merge)
             throws IOException, BadDataException, BadNameException {
         Certificate certificate = underlyingCertificateDirectory.tryInsertWithSpecialName(specialName, data, merge);
         if (certificate != null) {
