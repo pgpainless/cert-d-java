@@ -4,6 +4,8 @@
 
 package pgp.cert_d;
 
+import pgp.certificate_store.Key;
+import pgp.certificate_store.KeyMerger;
 import pgp.certificate_store.exception.BadDataException;
 import pgp.certificate_store.exception.BadNameException;
 import pgp.certificate_store.Certificate;
@@ -21,8 +23,10 @@ import java.util.Map;
 public class CachingSharedPGPCertificateDirectoryWrapper
         implements SharedPGPCertificateDirectory {
 
-    private static final Map<String, String> tagMap = new HashMap<>();
+    private static final Map<String, String> certTagMap = new HashMap<>();
+    private static final Map<String, String> keyTagMap = new HashMap<>();
     private static final Map<String, Certificate> certificateMap = new HashMap<>();
+    private static final Map<String, Key> keyMap = new HashMap<>();
     private final SharedPGPCertificateDirectory underlyingCertificateDirectory;
 
     public CachingSharedPGPCertificateDirectoryWrapper(SharedPGPCertificateDirectory wrapped) {
@@ -38,12 +42,26 @@ public class CachingSharedPGPCertificateDirectoryWrapper
     private void remember(String identifier, Certificate certificate) {
         certificateMap.put(identifier, certificate);
         try {
-            tagMap.put(identifier, certificate.getTag());
+            certTagMap.put(identifier, certificate.getTag());
         } catch (IOException e) {
-            tagMap.put(identifier, null);
+            certTagMap.put(identifier, null);
         }
     }
 
+    /**
+     * Store the given key under the given identifier into the cache.
+     *
+     * @param identifier fingerprint or special name
+     * @param key key
+     */
+    private void remember(String identifier, Key key) {
+        keyMap.put(identifier, key);
+        try {
+            keyTagMap.put(identifier, key.getTag());
+        } catch (IOException e) {
+            keyTagMap.put(identifier, null);
+        }
+    }
     /**
      * Returns true, if the cached tag differs from the provided tag.
      *
@@ -51,8 +69,13 @@ public class CachingSharedPGPCertificateDirectoryWrapper
      * @param tag tag
      * @return true if cached tag differs, false otherwise
      */
-    private boolean tagChanged(String identifier, String tag) {
-        String tack = tagMap.get(identifier);
+    private boolean certTagChanged(String identifier, String tag) {
+        String tack = certTagMap.get(identifier);
+        return !tagEquals(tag, tack);
+    }
+
+    private boolean keyTagChanged(String identifier, String tag) {
+        String tack = keyTagMap.get(identifier);
         return !tagEquals(tag, tack);
     }
 
@@ -72,7 +95,7 @@ public class CachingSharedPGPCertificateDirectoryWrapper
      */
     public void invalidate() {
         certificateMap.clear();
-        tagMap.clear();
+        certTagMap.clear();
     }
 
     @Override
@@ -111,7 +134,7 @@ public class CachingSharedPGPCertificateDirectoryWrapper
     @Override
     public Certificate getByFingerprintIfChanged(String fingerprint, String tag)
             throws IOException, BadNameException, BadDataException {
-        if (tagChanged(fingerprint, tag)) {
+        if (certTagChanged(fingerprint, tag)) {
             return getByFingerprint(fingerprint);
         }
         return null;
@@ -120,8 +143,28 @@ public class CachingSharedPGPCertificateDirectoryWrapper
     @Override
     public Certificate getBySpecialNameIfChanged(String specialName, String tag)
             throws IOException, BadNameException, BadDataException {
-        if (tagChanged(specialName, tag)) {
+        if (certTagChanged(specialName, tag)) {
             return getBySpecialName(specialName);
+        }
+        return null;
+    }
+
+    @Override
+    public Key getTrustRoot() throws IOException, BadDataException {
+        Key key = keyMap.get(SpecialNames.TRUST_ROOT);
+        if (key == null) {
+            key = underlyingCertificateDirectory.getTrustRoot();
+            if (key != null) {
+                remember(SpecialNames.TRUST_ROOT, key);
+            }
+        }
+        return key;
+    }
+
+    @Override
+    public Key getTrustRootIfChanged(String tag) throws IOException, BadDataException {
+        if (keyTagChanged(SpecialNames.TRUST_ROOT, tag)) {
+            return getTrustRoot();
         }
         return null;
     }
@@ -142,6 +185,22 @@ public class CachingSharedPGPCertificateDirectoryWrapper
             remember(certificate.getFingerprint(), certificate);
         }
         return certificate;
+    }
+
+    @Override
+    public Key insertTrustRoot(InputStream data, KeyMerger merge) throws IOException, BadDataException, InterruptedException {
+        Key key = underlyingCertificateDirectory.insertTrustRoot(data, merge);
+        remember(SpecialNames.TRUST_ROOT, key);
+        return key;
+    }
+
+    @Override
+    public Key tryInsertTrustRoot(InputStream data, KeyMerger merge) throws IOException, BadDataException {
+        Key key = underlyingCertificateDirectory.tryInsertTrustRoot(data, merge);
+        if (key != null) {
+            remember(SpecialNames.TRUST_ROOT, key);
+        }
+        return key;
     }
 
     @Override

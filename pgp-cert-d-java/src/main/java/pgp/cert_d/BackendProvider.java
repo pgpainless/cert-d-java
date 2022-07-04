@@ -6,10 +6,13 @@ package pgp.cert_d;
 
 import pgp.certificate_store.CertificateReaderBackend;
 import pgp.certificate_store.CertificateMerger;
+import pgp.certificate_store.KeyReaderBackend;
 
 public abstract class BackendProvider {
 
     public abstract CertificateReaderBackend provideCertificateReaderBackend();
+
+    public abstract KeyReaderBackend provideKeyReaderBackend();
 
     public abstract CertificateMerger provideDefaultMergeCallback();
 

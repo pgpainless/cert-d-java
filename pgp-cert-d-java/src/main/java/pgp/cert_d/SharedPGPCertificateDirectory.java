@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 
+import pgp.certificate_store.Key;
+import pgp.certificate_store.KeyMerger;
 import pgp.certificate_store.exception.BadDataException;
 import pgp.certificate_store.exception.BadNameException;
 import pgp.certificate_store.Certificate;
@@ -22,6 +24,18 @@ public interface SharedPGPCertificateDirectory {
 
     Certificate getBySpecialName(String specialName)
             throws IOException, BadNameException, BadDataException;
+
+    Key getTrustRoot()
+        throws IOException, BadDataException;
+
+    Key getTrustRootIfChanged(String tag)
+        throws IOException, BadDataException;
+
+    Key insertTrustRoot(InputStream data, KeyMerger merge)
+        throws IOException, BadDataException, InterruptedException;
+
+    Key tryInsertTrustRoot(InputStream data, KeyMerger merge)
+        throws IOException, BadDataException;
 
     Certificate getByFingerprintIfChanged(String fingerprint, String tag)
             throws IOException, BadNameException, BadDataException;

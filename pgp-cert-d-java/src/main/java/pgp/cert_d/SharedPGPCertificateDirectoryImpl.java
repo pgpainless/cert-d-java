@@ -16,6 +16,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import pgp.certificate_store.Key;
+import pgp.certificate_store.KeyMerger;
+import pgp.certificate_store.KeyReaderBackend;
 import pgp.certificate_store.exception.BadDataException;
 import pgp.certificate_store.exception.BadNameException;
 import pgp.certificate_store.exception.NotAStoreException;
@@ -28,33 +31,41 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
     private final FilenameResolver resolver;
     private final LockingMechanism writeLock;
     private final CertificateReaderBackend certificateReaderBackend;
+    private final KeyReaderBackend keyReaderBackend;
 
     public SharedPGPCertificateDirectoryImpl(BackendProvider backendProvider)
             throws NotAStoreException {
-        this(backendProvider.provideCertificateReaderBackend());
+        this(backendProvider.provideCertificateReaderBackend(), backendProvider.provideKeyReaderBackend());
     }
 
-    public SharedPGPCertificateDirectoryImpl(CertificateReaderBackend certificateReaderBackend)
+    public SharedPGPCertificateDirectoryImpl(CertificateReaderBackend certificateReaderBackend,
+                                             KeyReaderBackend keyReaderBackend)
             throws NotAStoreException {
         this(
                 BaseDirectoryProvider.getDefaultBaseDir(),
-                certificateReaderBackend);
+                certificateReaderBackend,
+                keyReaderBackend);
     }
 
-    public SharedPGPCertificateDirectoryImpl(File baseDirectory, CertificateReaderBackend certificateReaderBackend)
+    public SharedPGPCertificateDirectoryImpl(File baseDirectory,
+                                             CertificateReaderBackend certificateReaderBackend,
+                                             KeyReaderBackend keyReaderBackend)
             throws NotAStoreException {
         this(
                 certificateReaderBackend,
+                keyReaderBackend,
                 new FilenameResolver(baseDirectory),
                 FileLockingMechanism.defaultDirectoryFileLock(baseDirectory));
     }
 
     public SharedPGPCertificateDirectoryImpl(
             CertificateReaderBackend certificateReaderBackend,
+            KeyReaderBackend keyReaderBackend,
             FilenameResolver filenameResolver,
             LockingMechanism writeLock)
             throws NotAStoreException {
         this.certificateReaderBackend = certificateReaderBackend;
+        this.keyReaderBackend = keyReaderBackend;
         this.resolver = filenameResolver;
         this.writeLock = writeLock;
 
@@ -131,6 +142,36 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
     }
 
     @Override
+    public Key getTrustRoot() throws IOException, BadDataException {
+        File keyFile;
+        try {
+            keyFile = resolver.getKeyFileBySpecialName(SpecialNames.TRUST_ROOT);
+        } catch (BadNameException e) {
+            throw new RuntimeException("trust-root MUST be a known special name", e);
+        }
+
+        if (!keyFile.exists()) {
+            return null;
+        }
+        FileInputStream fileIn = new FileInputStream(keyFile);
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(fileIn);
+        Key key = keyReaderBackend.readKey(bufferedInputStream);
+
+        return key;
+    }
+
+    @Override
+    public Key getTrustRootIfChanged(String tag) throws IOException, BadDataException {
+        // TODO: The tag is likely intended for performance improvements,
+        //  so really we should look it up somewhere without the need to parse the whole key.
+        Key key = getTrustRoot();
+        if (key.getTag().equals(tag)) {
+            return null;
+        }
+        return key;
+    }
+
+    @Override
     public Certificate insert(InputStream data, CertificateMerger merge)
             throws IOException, BadDataException, InterruptedException {
         writeLock.lockDirectory();
@@ -170,28 +211,63 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
             newCertificate = merge.merge(newCertificate, existingCertificate);
         }
 
-        writeCertificate(newCertificate, certFile);
+        writeToFile(newCertificate.getInputStream(), certFile);
 
         return newCertificate;
     }
 
-    private void writeCertificate(Certificate certificate, File certFile)
+    private Key _insertTrustRoot(InputStream data, KeyMerger merge)
+        throws IOException, BadDataException {
+        Key newKey = keyReaderBackend.readKey(data);
+        Key existingKey;
+        File keyFile;
+        try {
+            existingKey = getTrustRoot();
+            keyFile = resolver.getKeyFileBySpecialName(SpecialNames.TRUST_ROOT);
+        } catch (BadNameException e) {
+            throw new RuntimeException(String.format("trust-root MUST be known special name.", e));
+        }
+
+        if (existingKey != null && !existingKey.getTag().equals(newKey.getTag())) {
+            newKey = merge.merge(newKey, existingKey);
+        }
+
+        writeToFile(newKey.getInputStream(), keyFile);
+
+        return newKey;
+    }
+
+    @Override
+    public Key insertTrustRoot(InputStream data, KeyMerger merge) throws IOException, BadDataException, InterruptedException {
+        writeLock.lockDirectory();
+
+        Key key = _insertTrustRoot(data, merge);
+
+        writeLock.releaseDirectory();
+        return key;
+    }
+
+    @Override
+    public Key tryInsertTrustRoot(InputStream data, KeyMerger merge) throws IOException, BadDataException {
+        return null;
+    }
+
+    private void writeToFile(InputStream inputStream, File certFile)
             throws IOException {
         certFile.getParentFile().mkdirs();
         if (!certFile.exists() && !certFile.createNewFile()) {
             throw new IOException("Could not create cert file " + certFile.getAbsolutePath());
         }
 
-        InputStream certIn = certificate.getInputStream();
         FileOutputStream fileOut = new FileOutputStream(certFile);
 
         byte[] buffer = new byte[4096];
         int read;
-        while ((read = certIn.read(buffer)) != -1) {
+        while ((read = inputStream.read(buffer)) != -1) {
             fileOut.write(buffer, 0, read);
         }
 
-        certIn.close();
+        inputStream.close();
         fileOut.close();
     }
 
@@ -229,7 +305,7 @@ public class SharedPGPCertificateDirectoryImpl implements SharedPGPCertificateDi
             newCertificate = merge.merge(newCertificate, existingCertificate);
         }
 
-        writeCertificate(newCertificate, certFile);
+        writeToFile(newCertificate.getInputStream(), certFile);
 
         return newCertificate;
     }
