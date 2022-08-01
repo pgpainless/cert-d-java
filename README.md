@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -->
 
 # Shared PGP Certificate Directory for Java
+[![status-badge](https://ci.codeberg.org/api/badges/PGPainless/cert-d-java/status.svg?branch=main)](https://ci.codeberg.org/PGPainless/cert-d-java)
+[![Coverage Status](https://coveralls.io/repos/github/pgpainless/cert-d-java/badge.svg?branch=main)](https://coveralls.io/github/pgpainless/cert-d-java?branch=main)
 
 This repository contains a number of modules defining OpenPGP certificate storage for Java and Android applications.
 
