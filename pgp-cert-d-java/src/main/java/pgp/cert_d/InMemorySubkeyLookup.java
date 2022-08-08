@@ -30,6 +30,7 @@ public class InMemorySubkeyLookup implements SubkeyLookup {
     public void storeCertificateSubkeyIds(String certificate, List<Long> subkeyIds) {
         for (long subkeyId : subkeyIds) {
             Set<String> certificates = subkeyMap.get(subkeyId);
+            // noinspection Java8MapApi
             if (certificates == null) {
                 certificates = new HashSet<>();
                 subkeyMap.put(subkeyId, certificates);
