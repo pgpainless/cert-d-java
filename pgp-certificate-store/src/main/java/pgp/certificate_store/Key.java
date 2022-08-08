@@ -10,7 +10,7 @@ import java.io.InputStream;
 /**
  * OpenPGP key (secret key).
  */
-public abstract class Key {
+public abstract class Key implements KeyMaterial {
 
     /**
      * Return the certificate part of this OpenPGP key.

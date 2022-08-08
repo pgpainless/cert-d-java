@@ -11,14 +11,7 @@ import java.util.Set;
 /**
  * OpenPGP certificate (public key).
  */
-public abstract class Certificate {
-    /**
-     * Return the fingerprint of the certificate as 40 lowercase hex characters.
-     * TODO: Allow OpenPGP V5 fingerprints
-     *
-     * @return fingerprint
-     */
-    public abstract String getFingerprint();
+public abstract class Certificate implements KeyMaterial {
 
     /**
      * Return an {@link InputStream} of the binary representation of the certificate.

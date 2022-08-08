@@ -12,13 +12,13 @@ import java.io.InputStream;
 public interface KeyReaderBackend {
 
     /**
-     * Read a {@link Key} from the given {@link InputStream}.
+     * Read a {@link KeyMaterial} (either {@link Key} or {@link Certificate}) from the given {@link InputStream}.
      *
      * @param data input stream containing the binary representation of the key.
-     * @return key object
+     * @return key or certificate object
      *
      * @throws IOException in case of an IO error
-     * @throws BadDataException in case that the data stream does not contain a valid OpenPGP key
+     * @throws BadDataException in case that the data stream does not contain a valid OpenPGP key/certificate
      */
-    Key readKey(InputStream data) throws IOException, BadDataException;
+    KeyMaterial read(InputStream data) throws IOException, BadDataException;
 }
