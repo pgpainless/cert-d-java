@@ -6,7 +6,6 @@ package pgp.cert_d;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import pgp.certificate_store.exception.BadNameException;
 
 import java.io.File;
 import java.io.IOException;

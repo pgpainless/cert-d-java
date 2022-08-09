@@ -3,6 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Abstract definitions of an OpenPGP certificate store.
+ * General OpenPGP Certificate Storage related classes.
  */
-package pgp.certificate_store;
+package pgp.certificate;

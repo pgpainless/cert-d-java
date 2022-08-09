@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pgp.certificate_store;
+package pgp.certificate;
 
-import pgp.certificate_store.exception.BadDataException;
+import pgp.cert_d.BadDataException;
 
 import java.io.IOException;
 import java.io.InputStream;

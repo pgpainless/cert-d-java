@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pgp.certificate_store.exception;
+package pgp.cert_d;
 
 /**
  * Provided name was neither a valid fingerprint, nor a known special name.

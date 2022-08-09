@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import pgp.certificate_store.SubkeyLookup;
-
 public class InMemorySubkeyLookup implements SubkeyLookup {
 
     private static final Map<Long, Set<String>> subkeyMap = new HashMap<>();

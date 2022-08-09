@@ -4,13 +4,10 @@
 
 package pgp.cert_d;
 
-import pgp.certificate_store.Certificate;
-import pgp.certificate_store.KeyMaterial;
-import pgp.certificate_store.KeyMaterialMerger;
-import pgp.certificate_store.KeyMaterialReaderBackend;
-import pgp.certificate_store.exception.BadDataException;
-import pgp.certificate_store.exception.BadNameException;
-import pgp.certificate_store.exception.NotAStoreException;
+import pgp.certificate.Certificate;
+import pgp.certificate.KeyMaterial;
+import pgp.certificate.KeyMaterialMerger;
+import pgp.certificate.KeyMaterialReaderBackend;
 
 import java.io.BufferedInputStream;
 import java.io.File;

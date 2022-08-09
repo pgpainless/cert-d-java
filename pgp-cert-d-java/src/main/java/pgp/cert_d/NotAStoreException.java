@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pgp.certificate_store.exception;
+package pgp.cert_d;
 
 /**
  * The base dir cannot possibly contain a store.

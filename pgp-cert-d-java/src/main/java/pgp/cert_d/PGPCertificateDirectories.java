@@ -4,8 +4,7 @@
 
 package pgp.cert_d;
 
-import pgp.certificate_store.KeyMaterialReaderBackend;
-import pgp.certificate_store.exception.NotAStoreException;
+import pgp.certificate.KeyMaterialReaderBackend;
 
 import java.io.File;
 

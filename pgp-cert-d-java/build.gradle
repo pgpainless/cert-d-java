@@ -28,9 +28,6 @@ dependencies {
 
     // SQL Subkey table
     testImplementation project(":pgp-cert-d-java-jdbc-sqlite-lookup")
-
-    // Certificate store
-    api project(":pgp-certificate-store")
 }
 
 animalsniffer {

@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import pgp.certificate_store.SubkeyLookup;
+import pgp.cert_d.SubkeyLookup;
 
 public class DatabaseSubkeyLookup implements SubkeyLookup {
 
