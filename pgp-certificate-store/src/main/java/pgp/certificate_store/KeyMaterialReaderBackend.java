@@ -9,7 +9,7 @@ import pgp.certificate_store.exception.BadDataException;
 import java.io.IOException;
 import java.io.InputStream;
 
-public interface KeyReaderBackend {
+public interface KeyMaterialReaderBackend {
 
     /**
      * Read a {@link KeyMaterial} (either {@link Key} or {@link Certificate}) from the given {@link InputStream}.

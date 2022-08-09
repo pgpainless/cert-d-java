@@ -18,13 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class FilenameResolverTest {
 
     private File baseDir;
-    private FilenameResolver resolver;
+    private FileBasedCertificateDirectoryBackend.FilenameResolver resolver;
 
     @BeforeEach
     public void setup() throws IOException {
         baseDir = Files.createTempDirectory("filenameresolver").toFile();
         baseDir.deleteOnExit();
-        resolver = new FilenameResolver(baseDir);
+        resolver = new FileBasedCertificateDirectoryBackend.FilenameResolver(baseDir);
     }
 
     @Test

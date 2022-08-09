@@ -4,6 +4,10 @@
 
 package pgp.certificate_store;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Set;
+
 public interface KeyMaterial {
 
     /**
@@ -14,4 +18,23 @@ public interface KeyMaterial {
      */
     String getFingerprint();
 
+    Certificate asCertificate();
+
+    /**
+     * Return an {@link InputStream} of the binary representation of the secret key.
+     *
+     * @return input stream
+     * @throws IOException in case of an IO error
+     */
+    InputStream getInputStream() throws IOException;
+
+    String getTag() throws IOException;
+
+    /**
+     * Return a {@link Set} containing key-ids of subkeys.
+     *
+     * @return subkeys
+     * @throws IOException in case of an IO error
+     */
+    Set<Long> getSubkeyIds() throws IOException;
 }
