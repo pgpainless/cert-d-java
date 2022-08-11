@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pgp.cert_d;
+package pgp.cert_d.subkey_lookup;
 
 import java.util.Collections;
 import java.util.HashMap;

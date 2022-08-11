@@ -4,6 +4,8 @@
 
 package pgp.cert_d;
 
+import pgp.cert_d.exception.BadDataException;
+import pgp.cert_d.exception.BadNameException;
 import pgp.certificate.Certificate;
 import pgp.certificate.KeyMaterial;
 import pgp.certificate.KeyMaterialMerger;

@@ -2,8 +2,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pgp.cert_d;
+package pgp.cert_d.backend;
 
+import pgp.cert_d.PGPCertificateDirectory;
+import pgp.cert_d.SpecialNames;
+import pgp.cert_d.exception.BadDataException;
+import pgp.cert_d.exception.BadNameException;
+import pgp.cert_d.exception.NotAStoreException;
 import pgp.certificate.Certificate;
 import pgp.certificate.KeyMaterial;
 import pgp.certificate.KeyMaterialMerger;
