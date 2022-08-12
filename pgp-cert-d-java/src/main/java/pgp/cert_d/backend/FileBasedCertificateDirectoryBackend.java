@@ -6,13 +6,13 @@ package pgp.cert_d.backend;
 
 import pgp.cert_d.PGPCertificateDirectory;
 import pgp.cert_d.SpecialNames;
-import pgp.cert_d.exception.BadDataException;
-import pgp.cert_d.exception.BadNameException;
-import pgp.cert_d.exception.NotAStoreException;
-import pgp.certificate.Certificate;
-import pgp.certificate.KeyMaterial;
-import pgp.certificate.KeyMaterialMerger;
-import pgp.certificate.KeyMaterialReaderBackend;
+import pgp.certificate_store.certificate.Certificate;
+import pgp.certificate_store.certificate.KeyMaterial;
+import pgp.certificate_store.certificate.KeyMaterialMerger;
+import pgp.certificate_store.certificate.KeyMaterialReaderBackend;
+import pgp.certificate_store.exception.BadDataException;
+import pgp.certificate_store.exception.BadNameException;
+import pgp.certificate_store.exception.NotAStoreException;
 
 import java.io.BufferedInputStream;
 import java.io.File;

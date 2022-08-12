@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pgp.certificate;
+package pgp.certificate_store.certificate;
 
 /**
  * OpenPGP key (secret key).

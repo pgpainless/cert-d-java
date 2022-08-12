@@ -6,8 +6,10 @@ package pgp.cert_d;
 
 import pgp.cert_d.backend.FileBasedCertificateDirectoryBackend;
 import pgp.cert_d.backend.InMemoryCertificateDirectoryBackend;
-import pgp.cert_d.exception.NotAStoreException;
-import pgp.certificate.KeyMaterialReaderBackend;
+import pgp.cert_d.subkey_lookup.InMemorySubkeyLookup;
+import pgp.cert_d.subkey_lookup.SubkeyLookup;
+import pgp.certificate_store.certificate.KeyMaterialReaderBackend;
+import pgp.certificate_store.exception.NotAStoreException;
 
 import java.io.File;
 
@@ -18,18 +20,18 @@ public final class PGPCertificateDirectories {
     }
 
     public static PGPCertificateDirectory inMemoryCertificateDirectory(KeyMaterialReaderBackend keyReader) {
-        return new PGPCertificateDirectory(new InMemoryCertificateDirectoryBackend(keyReader));
+        return new PGPCertificateDirectory(new InMemoryCertificateDirectoryBackend(keyReader), new InMemorySubkeyLookup());
     }
 
-    public static PGPCertificateDirectory defaultFileBasedCertificateDirectory(KeyMaterialReaderBackend keyReader)
+    public static PGPCertificateDirectory defaultFileBasedCertificateDirectory(KeyMaterialReaderBackend keyReader, SubkeyLookup subkeyLookup)
             throws NotAStoreException {
-        return fileBasedCertificateDirectory(keyReader, BaseDirectoryProvider.getDefaultBaseDir());
+        return fileBasedCertificateDirectory(keyReader, BaseDirectoryProvider.getDefaultBaseDir(), subkeyLookup);
     }
 
     public static PGPCertificateDirectory fileBasedCertificateDirectory(
-            KeyMaterialReaderBackend keyReader, File baseDirectory)
+            KeyMaterialReaderBackend keyReader, File baseDirectory, SubkeyLookup subkeyLookup)
             throws NotAStoreException {
         return new PGPCertificateDirectory(
-                new FileBasedCertificateDirectoryBackend(baseDirectory, keyReader));
+                new FileBasedCertificateDirectoryBackend(baseDirectory, keyReader), subkeyLookup);
     }
 }

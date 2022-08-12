@@ -4,23 +4,28 @@
 
 package pgp.cert_d;
 
-import pgp.cert_d.exception.BadDataException;
-import pgp.cert_d.exception.BadNameException;
-import pgp.certificate.Certificate;
-import pgp.certificate.KeyMaterial;
-import pgp.certificate.KeyMaterialMerger;
+import pgp.cert_d.subkey_lookup.SubkeyLookup;
+import pgp.certificate_store.certificate.Certificate;
+import pgp.certificate_store.certificate.KeyMaterial;
+import pgp.certificate_store.certificate.KeyMaterialMerger;
+import pgp.certificate_store.exception.BadDataException;
+import pgp.certificate_store.exception.BadNameException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 public class PGPCertificateDirectory
-        implements ReadOnlyPGPCertificateDirectory, WritingPGPCertificateDirectory {
+        implements ReadOnlyPGPCertificateDirectory, WritingPGPCertificateDirectory, SubkeyLookup {
 
     private final Backend backend;
+    private final SubkeyLookup subkeyLookup;
 
-    public PGPCertificateDirectory(Backend backend) {
+    public PGPCertificateDirectory(Backend backend, SubkeyLookup subkeyLookup) {
         this.backend = backend;
+        this.subkeyLookup = subkeyLookup;
     }
 
     @Override
@@ -83,6 +88,7 @@ public class PGPCertificateDirectory
             throws IOException, BadDataException, InterruptedException {
         backend.getLock().lockDirectory();
         KeyMaterial inserted = backend.doInsertTrustRoot(data, merge);
+        subkeyLookup.storeCertificateSubkeyIds(inserted.getFingerprint(), inserted.getSubkeyIds());
         backend.getLock().releaseDirectory();
         return inserted;
     }
@@ -94,6 +100,7 @@ public class PGPCertificateDirectory
             return null;
         }
         KeyMaterial inserted = backend.doInsertTrustRoot(data, merge);
+        subkeyLookup.storeCertificateSubkeyIds(inserted.getFingerprint(), inserted.getSubkeyIds());
         backend.getLock().releaseDirectory();
         return inserted;
     }
@@ -105,6 +112,7 @@ public class PGPCertificateDirectory
             throws IOException, BadDataException, InterruptedException {
         backend.getLock().lockDirectory();
         Certificate inserted = backend.doInsert(data, merge);
+        subkeyLookup.storeCertificateSubkeyIds(inserted.getFingerprint(), inserted.getSubkeyIds());
         backend.getLock().releaseDirectory();
         return inserted;
     }
@@ -116,6 +124,7 @@ public class PGPCertificateDirectory
             return null;
         }
         Certificate inserted = backend.doInsert(data, merge);
+        subkeyLookup.storeCertificateSubkeyIds(inserted.getFingerprint(), inserted.getSubkeyIds());
         backend.getLock().releaseDirectory();
         return inserted;
     }
@@ -125,6 +134,7 @@ public class PGPCertificateDirectory
             throws IOException, BadDataException, BadNameException, InterruptedException {
         backend.getLock().lockDirectory();
         Certificate inserted = backend.doInsertWithSpecialName(specialName, data, merge);
+        subkeyLookup.storeCertificateSubkeyIds(inserted.getFingerprint(), inserted.getSubkeyIds());
         backend.getLock().releaseDirectory();
         return inserted;
     }
@@ -136,8 +146,19 @@ public class PGPCertificateDirectory
             return null;
         }
         Certificate inserted = backend.doInsertWithSpecialName(specialName, data, merge);
+        subkeyLookup.storeCertificateSubkeyIds(inserted.getFingerprint(), inserted.getSubkeyIds());
         backend.getLock().releaseDirectory();
         return inserted;
+    }
+
+    @Override
+    public Set<String> getCertificateFingerprintsForSubkeyId(long subkeyId) throws IOException {
+        return subkeyLookup.getCertificateFingerprintsForSubkeyId(subkeyId);
+    }
+
+    @Override
+    public void storeCertificateSubkeyIds(String certificate, List<Long> subkeyIds) throws IOException {
+        subkeyLookup.storeCertificateSubkeyIds(certificate, subkeyIds);
     }
 
     public interface Backend {

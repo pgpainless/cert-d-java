@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pgp.certificate;
+package pgp.certificate_store.certificate;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Set;
 
 public interface KeyMaterial {
@@ -36,5 +37,5 @@ public interface KeyMaterial {
      * @return subkeys
      * @throws IOException in case of an IO error
      */
-    Set<Long> getSubkeyIds() throws IOException;
+    List<Long> getSubkeyIds() throws IOException;
 }

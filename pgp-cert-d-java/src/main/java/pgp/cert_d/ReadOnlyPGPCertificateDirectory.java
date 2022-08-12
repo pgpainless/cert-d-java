@@ -4,9 +4,9 @@
 
 package pgp.cert_d;
 
-import pgp.cert_d.exception.BadDataException;
-import pgp.cert_d.exception.BadNameException;
-import pgp.certificate.Certificate;
+import pgp.certificate_store.certificate.Certificate;
+import pgp.certificate_store.exception.BadDataException;
+import pgp.certificate_store.exception.BadNameException;
 
 import java.io.IOException;
 import java.util.Iterator;
