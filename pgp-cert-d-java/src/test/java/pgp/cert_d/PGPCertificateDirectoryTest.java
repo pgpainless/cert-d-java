@@ -5,18 +5,27 @@
 package pgp.cert_d;
 
 import org.bouncycastle.util.io.Streams;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import pgp.cert_d.subkey_lookup.InMemorySubkeyLookup;
 import pgp.certificate_store.certificate.Certificate;
 import pgp.certificate_store.certificate.Key;
 import pgp.certificate_store.certificate.KeyMaterial;
 import pgp.certificate_store.exception.BadDataException;
 import pgp.certificate_store.exception.BadNameException;
+import pgp.certificate_store.exception.NotAStoreException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -134,11 +143,23 @@ public class PGPCertificateDirectoryTest {
             "-----END PGP PUBLIC KEY BLOCK-----\n";
     private static final String CEDRIC_FP = "5e75bf20646bc1a98d3b1bc2fe9cd472987c4021";
 
-    @Test
-    public void lockDirectoryAndInsertWillFail() throws IOException, InterruptedException, BadDataException {
-        PGPCertificateDirectory directory = PGPCertificateDirectories.inMemoryCertificateDirectory(
+    private static Stream<PGPCertificateDirectory> provideTestSubjects() throws IOException, NotAStoreException {
+        PGPCertificateDirectory inMemory = PGPCertificateDirectories.inMemoryCertificateDirectory(
                 new TestKeyMaterialReaderBackend());
 
+        File tempDir = Files.createTempDirectory("pgp-cert-d-test").toFile();
+        tempDir.deleteOnExit();
+        PGPCertificateDirectory fileBased = PGPCertificateDirectories.fileBasedCertificateDirectory(
+                new TestKeyMaterialReaderBackend(),
+                tempDir,
+                new InMemorySubkeyLookup());
+
+        return Stream.of(inMemory, fileBased);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void lockDirectoryAndInsertWillFail(PGPCertificateDirectory directory) throws IOException, InterruptedException, BadDataException {
         // Manually lock the dir
         assertFalse(directory.backend.getLock().isLocked());
         directory.backend.getLock().lockDirectory();
@@ -153,19 +174,16 @@ public class PGPCertificateDirectoryTest {
         assertNotNull(inserted);
     }
 
-    @Test
-    public void getByInvalidNameFails() {
-        PGPCertificateDirectory directory = PGPCertificateDirectories.inMemoryCertificateDirectory(
-                new TestKeyMaterialReaderBackend());
-
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void getByInvalidNameFails(PGPCertificateDirectory directory) {
         assertThrows(BadNameException.class, () -> directory.getBySpecialName("invalid"));
     }
 
-    @Test
-    public void testInsertAndGetSingleCert() throws BadDataException, IOException, InterruptedException, BadNameException {
-        PGPCertificateDirectory directory = PGPCertificateDirectories.inMemoryCertificateDirectory(
-                new TestKeyMaterialReaderBackend());
-
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void testInsertAndGetSingleCert(PGPCertificateDirectory directory)
+            throws BadDataException, IOException, InterruptedException, BadNameException {
         assertNull(directory.getByFingerprint(CEDRIC_FP), "Empty directory MUST NOT contain certificate");
 
         ByteArrayInputStream bytesIn = new ByteArrayInputStream(CEDRIC_CERT.getBytes(UTF8));
@@ -182,11 +200,10 @@ public class PGPCertificateDirectoryTest {
         assertArrayEquals(expected, actual.toByteArray(), "InputStream of cert MUST match what we gave in");
     }
 
-    @Test
-    public void testInsertAndGetTrustRootAndCert() throws BadDataException, IOException, InterruptedException {
-        PGPCertificateDirectory directory = PGPCertificateDirectories.inMemoryCertificateDirectory(
-                new TestKeyMaterialReaderBackend());
-
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void testInsertAndGetTrustRootAndCert(PGPCertificateDirectory directory)
+            throws BadDataException, IOException, InterruptedException {
         assertNull(directory.getTrustRoot());
 
         KeyMaterial trustRootMaterial = directory.insertTrustRoot(
@@ -203,9 +220,14 @@ public class PGPCertificateDirectoryTest {
         directory.tryInsert(new ByteArrayInputStream(RON_CERT.getBytes(UTF8)), new TestKeyMaterialMerger());
         directory.insert(new ByteArrayInputStream(CEDRIC_CERT.getBytes(UTF8)), new TestKeyMaterialMerger());
 
+        Set<String> expected = new HashSet<>(Arrays.asList(RON_FP, CEDRIC_FP));
+
+        Set<String> actual = new HashSet<>();
         Iterator<String> fingerprints = directory.fingerprints();
-        assertEquals(RON_FP, fingerprints.next());
-        assertEquals(CEDRIC_FP, fingerprints.next());
+        actual.add(fingerprints.next());
+        actual.add(fingerprints.next());
         assertFalse(fingerprints.hasNext());
+
+        assertEquals(expected, actual);
     }
 }
