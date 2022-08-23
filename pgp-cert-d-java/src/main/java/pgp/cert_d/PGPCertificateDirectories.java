@@ -13,23 +13,32 @@ import pgp.certificate_store.exception.NotAStoreException;
 
 import java.io.File;
 
+/**
+ * Static factory methods that return implementations of the {@link PGPCertificateDirectory} class.
+ */
 public final class PGPCertificateDirectories {
 
     private PGPCertificateDirectories() {
 
     }
 
-    public static PGPCertificateDirectory inMemoryCertificateDirectory(KeyMaterialReaderBackend keyReader) {
-        return new PGPCertificateDirectory(new InMemoryCertificateDirectoryBackend(keyReader), new InMemorySubkeyLookup());
+    public static PGPCertificateDirectory inMemoryCertificateDirectory(
+            KeyMaterialReaderBackend keyReader) {
+        return new PGPCertificateDirectory(
+                new InMemoryCertificateDirectoryBackend(keyReader), new InMemorySubkeyLookup());
     }
 
-    public static PGPCertificateDirectory defaultFileBasedCertificateDirectory(KeyMaterialReaderBackend keyReader, SubkeyLookup subkeyLookup)
+    public static PGPCertificateDirectory defaultFileBasedCertificateDirectory(
+            KeyMaterialReaderBackend keyReader,
+            SubkeyLookup subkeyLookup)
             throws NotAStoreException {
         return fileBasedCertificateDirectory(keyReader, BaseDirectoryProvider.getDefaultBaseDir(), subkeyLookup);
     }
 
     public static PGPCertificateDirectory fileBasedCertificateDirectory(
-            KeyMaterialReaderBackend keyReader, File baseDirectory, SubkeyLookup subkeyLookup)
+            KeyMaterialReaderBackend keyReader,
+            File baseDirectory,
+            SubkeyLookup subkeyLookup)
             throws NotAStoreException {
         return new PGPCertificateDirectory(
                 new FileBasedCertificateDirectoryBackend(baseDirectory, keyReader), subkeyLookup);

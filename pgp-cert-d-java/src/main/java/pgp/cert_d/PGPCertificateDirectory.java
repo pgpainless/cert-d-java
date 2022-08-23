@@ -20,8 +20,8 @@ import java.util.Set;
 public class PGPCertificateDirectory
         implements ReadOnlyPGPCertificateDirectory, WritingPGPCertificateDirectory, SubkeyLookup {
 
-    private final Backend backend;
-    private final SubkeyLookup subkeyLookup;
+    final Backend backend;
+    final SubkeyLookup subkeyLookup;
 
     public PGPCertificateDirectory(Backend backend, SubkeyLookup subkeyLookup) {
         this.backend = backend;

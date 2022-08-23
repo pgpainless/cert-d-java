@@ -76,7 +76,10 @@ public class InMemoryCertificateDirectoryBackend implements PGPCertificateDirect
 
 
     @Override
-    public KeyMaterial readBySpecialName(String specialName) {
+    public KeyMaterial readBySpecialName(String specialName) throws BadNameException {
+        if (SpecialNames.lookupSpecialName(specialName) == null) {
+            throw new BadNameException("Invalid special name " + specialName);
+        }
         return keyMaterialSpecialNameMap.get(specialName);
     }
 
@@ -89,7 +92,13 @@ public class InMemoryCertificateDirectoryBackend implements PGPCertificateDirect
     public KeyMaterial doInsertTrustRoot(InputStream data, KeyMaterialMerger merge)
             throws BadDataException, IOException {
         KeyMaterial update = reader.read(data);
-        KeyMaterial existing = readBySpecialName(SpecialNames.TRUST_ROOT);
+        KeyMaterial existing = null;
+        try {
+            existing = readBySpecialName(SpecialNames.TRUST_ROOT);
+        } catch (BadNameException e) {
+            // Does not happen
+            throw new RuntimeException(e);
+        }
         KeyMaterial merged = merge.merge(update, existing);
         keyMaterialSpecialNameMap.put(SpecialNames.TRUST_ROOT, merged);
         return merged;
