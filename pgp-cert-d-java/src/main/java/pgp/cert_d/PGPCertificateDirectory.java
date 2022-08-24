@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Implementation of the Shared PGP Certificate Directory.
@@ -27,6 +28,7 @@ public class PGPCertificateDirectory
 
     final Backend backend;
     final SubkeyLookup subkeyLookup;
+    private final Pattern openPgpV4FingerprintPattern = Pattern.compile("^[a-f0-9]{40}$");
 
     /**
      * Constructor for a PGP certificate directory.
@@ -41,6 +43,9 @@ public class PGPCertificateDirectory
 
     @Override
     public Certificate getByFingerprint(String fingerprint) throws BadDataException, BadNameException, IOException {
+        if (!openPgpV4FingerprintPattern.matcher(fingerprint).matches()) {
+            throw new BadNameException();
+        }
         return backend.readByFingerprint(fingerprint);
     }
 

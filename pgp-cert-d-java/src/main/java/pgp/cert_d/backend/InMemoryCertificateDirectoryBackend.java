@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class InMemoryCertificateDirectoryBackend implements PGPCertificateDirectory.Backend {
 
@@ -60,6 +61,7 @@ public class InMemoryCertificateDirectoryBackend implements PGPCertificateDirect
     private final Map<String, KeyMaterial> keyMaterialSpecialNameMap = new HashMap<>();
     private final PGPCertificateDirectory.LockingMechanism lock = new ObjectLockingMechanism();
     private final KeyMaterialReaderBackend reader;
+    private final AtomicLong nonce = new AtomicLong(1);
 
     public InMemoryCertificateDirectoryBackend(KeyMaterialReaderBackend reader) {
         this.reader = reader;
@@ -102,9 +104,9 @@ public class InMemoryCertificateDirectoryBackend implements PGPCertificateDirect
         }
         KeyMaterial merged = merge.merge(update, existing);
         if (merged instanceof Key) {
-            merged = new Key((Key) merged, System.currentTimeMillis());
+            merged = new Key((Key) merged, newTag());
         } else {
-            merged = new Certificate((Certificate) merged, System.currentTimeMillis());
+            merged = new Certificate((Certificate) merged, newTag());
         }
         keyMaterialSpecialNameMap.put(SpecialNames.TRUST_ROOT, merged);
         return merged;
@@ -117,7 +119,7 @@ public class InMemoryCertificateDirectoryBackend implements PGPCertificateDirect
         KeyMaterial update = reader.read(data, null);
         Certificate existing = readByFingerprint(update.getFingerprint());
         Certificate merged = merge.merge(update, existing).asCertificate();
-        merged = new Certificate(merged, System.currentTimeMillis());
+        merged = new Certificate(merged, newTag());
         certificateFingerprintMap.put(update.getFingerprint(), merged);
         return merged;
     }
@@ -129,9 +131,9 @@ public class InMemoryCertificateDirectoryBackend implements PGPCertificateDirect
         KeyMaterial existing = readBySpecialName(specialName);
         KeyMaterial merged = merge.merge(keyMaterial, existing);
         if (merged instanceof Key) {
-            merged = new Key((Key) merged, System.currentTimeMillis());
+            merged = new Key((Key) merged, newTag());
         } else {
-            merged = new Certificate((Certificate) merged, System.currentTimeMillis());
+            merged = new Certificate((Certificate) merged, newTag());
         }
         keyMaterialSpecialNameMap.put(specialName, merged);
         return merged.asCertificate();
@@ -156,5 +158,9 @@ public class InMemoryCertificateDirectoryBackend implements PGPCertificateDirect
             return null;
         }
         return tagged.getTag();
+    }
+
+    private Long newTag() {
+        return System.currentTimeMillis() + nonce.incrementAndGet();
     }
 }

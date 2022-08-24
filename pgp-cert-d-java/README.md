@@ -13,9 +13,11 @@ Backend-agnostic implementation of the [Shared PGP Certificate Directory Specifi
 This module implements the non-OpenPGP parts of the spec, e.g. locating the directory, resolving certificate file paths,
 locking the directory for writes etc.
 
+This library can be used on Android API level 26 and up.
+
 To get a useful implementation, a backend implementation such as `pgpainless-cert-d` is required, which needs to provide
 support for reading and merging certificates.
 
-`pgp-cert-d-java` can be used as an implementation of `pgp-certificate-store`.
+`pgp-cert-d-java` can be used as an implementation of `pgp-certificate-store` using the `PGPCertificateStoreAdapter` class.
 
 Note: This is a library module. For a command line interface, see [pgpainless-cert-d-cli](https://github.com/pgpainless/cert-d-pgpainless/tree/main/pgpainless-cert-d-cli).
