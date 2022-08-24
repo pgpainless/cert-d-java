@@ -16,9 +16,19 @@ import java.sql.SQLException;
  */
 public class DatabaseSubkeyLookupFactory implements SubkeyLookupFactory {
 
+    private String databaseName;
+
+    public DatabaseSubkeyLookupFactory() {
+        this("_pgpainless_subkey_map.db");
+    }
+
+    public DatabaseSubkeyLookupFactory(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
     @Override
     public SubkeyLookup createFileBasedInstance(File baseDirectory) {
-        File databaseFile = new File(baseDirectory, "_pgpainless_subkey_map.db");
+        File databaseFile = new File(baseDirectory, databaseName);
         SubkeyLookupDao dao;
         try {
             if (!databaseFile.exists()) {

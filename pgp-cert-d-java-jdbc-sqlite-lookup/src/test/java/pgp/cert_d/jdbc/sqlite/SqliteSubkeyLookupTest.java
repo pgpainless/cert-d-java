@@ -22,15 +22,15 @@ import org.junit.jupiter.api.Test;
 
 public class SqliteSubkeyLookupTest {
 
-    private File databaseFile;
+    private File tempDir;
     private DatabaseSubkeyLookup lookup;
 
     @BeforeEach
-    public void setupLookup() throws IOException, SQLException {
-        databaseFile = Files.createTempFile("pgp.cert.d-", "lookup.db").toFile();
-        databaseFile.createNewFile();
-        databaseFile.deleteOnExit();
-        lookup = new DatabaseSubkeyLookup(SqliteSubkeyLookupDaoImpl.forDatabaseFile(databaseFile));
+    public void setupLookup() throws IOException {
+        tempDir = Files.createTempDirectory("pgp.cert.d").toFile();
+        tempDir.deleteOnExit();
+        lookup = (DatabaseSubkeyLookup) new DatabaseSubkeyLookupFactory()
+                .createFileBasedInstance(tempDir);
     }
 
     @Test
@@ -55,7 +55,7 @@ public class SqliteSubkeyLookupTest {
         assertEquals(Collections.singleton("eb85bb5fa33a75e15e944e63f231550c4f47e38e"), lookup.getCertificateFingerprintsForSubkeyId(1337));
 
         // do the lookup using a second db instance on the same file
-        DatabaseSubkeyLookup secondInstance = new DatabaseSubkeyLookup(SqliteSubkeyLookupDaoImpl.forDatabaseFile(databaseFile));
+        DatabaseSubkeyLookup secondInstance = (DatabaseSubkeyLookup) new DatabaseSubkeyLookupFactory().createFileBasedInstance(tempDir);
         assertEquals(Collections.singleton("eb85bb5fa33a75e15e944e63f231550c4f47e38e"), secondInstance.getCertificateFingerprintsForSubkeyId(1337));
     }
 
