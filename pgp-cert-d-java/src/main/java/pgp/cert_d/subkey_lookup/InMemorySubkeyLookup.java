@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pgp.cert_d;
+package pgp.cert_d.subkey_lookup;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,8 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import pgp.certificate_store.SubkeyLookup;
 
 public class InMemorySubkeyLookup implements SubkeyLookup {
 

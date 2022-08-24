@@ -24,7 +24,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import pgp.cert_d.jdbc.sqlite.DatabaseSubkeyLookup;
 import pgp.cert_d.jdbc.sqlite.SqliteSubkeyLookupDaoImpl;
-import pgp.certificate_store.SubkeyLookup;
+import pgp.cert_d.subkey_lookup.InMemorySubkeyLookup;
+import pgp.cert_d.subkey_lookup.SubkeyLookup;
 
 public class SubkeyLookupTest {
 

@@ -3,6 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Implementation of a {@link pgp.certificate_store.SubkeyLookup} mechanism using an SQLite Database.
+ * Implementation of a {@link pgp.cert_d.subkey_lookup.SubkeyLookup} mechanism using an SQLite Database.
  */
 package pgp.cert_d.jdbc.sqlite;

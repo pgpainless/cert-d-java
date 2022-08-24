@@ -6,6 +6,16 @@ package pgp.cert_d;
 
 import java.io.File;
 
+/**
+ * Provider class that is responsible for resolving the pgp.cert.d base directory of the system.
+ * The result can be overwritten by setting the <pre>PGP_CERT_D</pre> environment variable.
+ * If this variable is not set, the system-specific default directory will be returned.
+ *
+ * On Windows systems, this is <pre>%APPDATA%\pgp.cert.d</pre>.
+ * On Linux systems it is either <pre>$XDG_DATA_HOME/pgp.cert.d</pre> or, if <pre>$XDG_DATA_HOME</pre> is not set,
+ * it is <pre>$HOME/.local/share/pgp.cert.d</pre>
+ * On Mac systems it is <pre>$HOME/Library/Application Support/pgp.cert.d</pre>.
+ */
 public class BaseDirectoryProvider {
 
     public static File getDefaultBaseDir() {

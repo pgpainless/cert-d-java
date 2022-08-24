@@ -3,6 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Exceptions.
+ * Subkey Lookup functionality.
  */
-package pgp.certificate_store.exception;
+package pgp.cert_d.subkey_lookup;

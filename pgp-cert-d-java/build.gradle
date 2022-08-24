@@ -16,7 +16,7 @@ apply plugin: 'ru.vyarus.animalsniffer'
 
 dependencies {
     // animal sniffer for ensuring Android API compatibility
-    signature "net.sf.androidscents.signature:android-api-level-${minAndroidSdk}:2.3.3_r2@signature"
+    signature "net.sf.androidscents.signature:android-api-level-${minAndroidSdk}:8.0.0_r2@signature"
 
     // JUnit
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
@@ -26,11 +26,13 @@ dependencies {
     // Logging
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
 
+    api project(":pgp-certificate-store")
+
     // SQL Subkey table
     testImplementation project(":pgp-cert-d-java-jdbc-sqlite-lookup")
 
-    // Certificate store
-    api project(":pgp-certificate-store")
+    testImplementation "org.bouncycastle:bcprov-jdk15to18:$bouncycastleVersion"
+    testImplementation "org.bouncycastle:bcpg-jdk15to18:$bouncycastleVersion"
 }
 
 animalsniffer {

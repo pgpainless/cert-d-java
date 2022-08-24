@@ -6,6 +6,7 @@ package pgp.cert_d;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import pgp.cert_d.backend.FileBasedCertificateDirectoryBackend;
 import pgp.certificate_store.exception.BadNameException;
 
 import java.io.File;
@@ -18,13 +19,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class FilenameResolverTest {
 
     private File baseDir;
-    private FilenameResolver resolver;
+    private FileBasedCertificateDirectoryBackend.FilenameResolver resolver;
 
     @BeforeEach
     public void setup() throws IOException {
         baseDir = Files.createTempDirectory("filenameresolver").toFile();
         baseDir.deleteOnExit();
-        resolver = new FilenameResolver(baseDir);
+        resolver = new FileBasedCertificateDirectoryBackend.FilenameResolver(baseDir);
     }
 
     @Test

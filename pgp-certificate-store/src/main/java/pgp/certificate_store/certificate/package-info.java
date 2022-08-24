@@ -3,6 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Exceptions.
+ * General OpenPGP Certificate Storage related classes.
  */
-package pgp.certificate_store.exception;
+package pgp.certificate_store.certificate;
