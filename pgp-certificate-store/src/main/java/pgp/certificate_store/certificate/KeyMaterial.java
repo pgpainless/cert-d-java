@@ -4,7 +4,6 @@
 
 package pgp.certificate_store.certificate;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
@@ -19,23 +18,34 @@ public interface KeyMaterial {
      */
     String getFingerprint();
 
+    /**
+     * Return the {@link Certificate} belonging to this key material.
+     * If this is already a {@link Certificate}, return this.
+     * If this is a {@link Key}, extract the {@link Certificate} and return it.
+     *
+     * @return certificate
+     */
     Certificate asCertificate();
 
     /**
      * Return an {@link InputStream} of the binary representation of the secret key.
      *
      * @return input stream
-     * @throws IOException in case of an IO error
      */
-    InputStream getInputStream() throws IOException;
+    InputStream getInputStream();
 
-    String getTag() throws IOException;
+    /**
+     * Return the tag belonging to this key material.
+     * The tag can be used to keep an application cache in sync with what is in the directory.
+     *
+     * @return tag
+     */
+    Long getTag();
 
     /**
      * Return a {@link Set} containing key-ids of subkeys.
      *
      * @return subkeys
-     * @throws IOException in case of an IO error
      */
-    List<Long> getSubkeyIds() throws IOException;
+    List<Long> getSubkeyIds();
 }

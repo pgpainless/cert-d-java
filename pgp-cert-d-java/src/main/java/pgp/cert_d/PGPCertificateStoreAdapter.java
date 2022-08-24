@@ -38,6 +38,16 @@ public class PGPCertificateStoreAdapter implements PGPCertificateStore {
     }
 
     @Override
+    public Certificate getCertificateIfChanged(String identifier, Long tag)
+            throws IOException, BadNameException, BadDataException {
+        if (SpecialNames.lookupSpecialName(identifier) != null) {
+            return directory.getBySpecialNameIfChanged(identifier, tag);
+        } else {
+            return directory.getByFingerprintIfChanged(identifier.toLowerCase(), tag);
+        }
+    }
+
+    @Override
     public Iterator<Certificate> getCertificatesBySubkeyId(long subkeyId)
             throws IOException, BadDataException {
         Set<String> fingerprints = directory.getCertificateFingerprintsForSubkeyId(subkeyId);

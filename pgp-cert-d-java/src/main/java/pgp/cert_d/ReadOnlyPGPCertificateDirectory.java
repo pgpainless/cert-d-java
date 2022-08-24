@@ -16,10 +16,19 @@ public interface ReadOnlyPGPCertificateDirectory {
     Certificate getTrustRootCertificate()
             throws IOException, BadDataException;
 
+    Certificate getTrustRootCertificateIfChanged(long tag)
+            throws IOException, BadDataException;
+
     Certificate getByFingerprint(String fingerprint)
             throws IOException, BadNameException, BadDataException;
 
+    Certificate getByFingerprintIfChanged(String fingerprint, long tag)
+            throws IOException, BadNameException, BadDataException;
+
     Certificate getBySpecialName(String specialName)
+            throws IOException, BadNameException, BadDataException;
+
+    Certificate getBySpecialNameIfChanged(String specialName, long tag)
             throws IOException, BadNameException, BadDataException;
 
     Iterator<Certificate> items();

@@ -34,6 +34,16 @@ public class PGPCertificateDirectory
     }
 
     @Override
+    public Certificate getByFingerprintIfChanged(String fingerprint, long tag)
+            throws IOException, BadNameException, BadDataException {
+        if (tag != backend.getTagForFingerprint(fingerprint)) {
+            return getByFingerprint(fingerprint);
+        }
+        return null;
+    }
+
+
+    @Override
     public Certificate getBySpecialName(String specialName)
             throws BadNameException, BadDataException, IOException {
         KeyMaterial keyMaterial = backend.readBySpecialName(specialName);
@@ -44,10 +54,28 @@ public class PGPCertificateDirectory
     }
 
     @Override
+    public Certificate getBySpecialNameIfChanged(String specialName, long tag)
+            throws IOException, BadNameException, BadDataException {
+        if (tag != backend.getTagForSpecialName(specialName)) {
+            return getBySpecialName(specialName);
+        }
+        return null;
+    }
+
+    @Override
     public Certificate getTrustRootCertificate()
             throws IOException, BadDataException {
         try {
             return getBySpecialName(SpecialNames.TRUST_ROOT);
+        } catch (BadNameException e) {
+            throw new AssertionError("'" + SpecialNames.TRUST_ROOT + "' is an implementation MUST");
+        }
+    }
+
+    @Override
+    public Certificate getTrustRootCertificateIfChanged(long tag) throws IOException, BadDataException {
+        try {
+            return getBySpecialNameIfChanged(SpecialNames.TRUST_ROOT, tag);
         } catch (BadNameException e) {
             throw new AssertionError("'" + SpecialNames.TRUST_ROOT + "' is an implementation MUST");
         }
@@ -179,6 +207,10 @@ public class PGPCertificateDirectory
 
         Certificate doInsertWithSpecialName(String specialName, InputStream data, KeyMaterialMerger merge)
                                 throws IOException, BadDataException, BadNameException;
+
+        Long getTagForFingerprint(String fingerprint) throws BadNameException, IOException;
+
+        Long getTagForSpecialName(String specialName) throws BadNameException, IOException;
     }
 
     public interface LockingMechanism {

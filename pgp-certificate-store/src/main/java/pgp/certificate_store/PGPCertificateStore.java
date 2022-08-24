@@ -33,6 +33,23 @@ public interface PGPCertificateStore {
             throws IOException, BadNameException, BadDataException;
 
     /**
+     * Return the certificate that matches the given identifier, but only if it has been changed.
+     * Whether it has been changed is determined by calculating the tag in the directory
+     * (e.g. by looking at the inode and last modification date) and comparing the result with the tag provided by
+     * the caller.
+     *
+     * @param identifier certificate identifier
+     * @param tag tag by the caller
+     * @return certificate if it has been changed, null otherwise
+     *
+     * @throws IOException in case of an IO-error
+     * @throws BadNameException if the identifier is invalid
+     * @throws BadDataException if the certificate file contains invalid data
+     */
+    Certificate getCertificateIfChanged(String identifier, Long tag)
+            throws IOException, BadNameException, BadDataException;
+
+    /**
      * Return an {@link Iterator} over all certificates in the store that contain a subkey with the given
      * subkey id.
      * @param subkeyId id of the subkey
@@ -42,7 +59,7 @@ public interface PGPCertificateStore {
      * @throws BadDataException if any of the certificate files contains invalid data
      */
     Iterator<Certificate> getCertificatesBySubkeyId(long subkeyId)
-        throws IOException, BadDataException;
+            throws IOException, BadDataException;
 
     /**
      * Insert a certificate into the store.

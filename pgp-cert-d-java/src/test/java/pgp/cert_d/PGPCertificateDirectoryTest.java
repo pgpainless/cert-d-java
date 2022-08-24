@@ -5,12 +5,17 @@
 package pgp.cert_d;
 
 import org.bouncycastle.util.io.Streams;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import pgp.cert_d.backend.FileBasedCertificateDirectoryBackend;
+import pgp.cert_d.dummy.TestKeyMaterialMerger;
+import pgp.cert_d.dummy.TestKeyMaterialReaderBackend;
 import pgp.cert_d.subkey_lookup.InMemorySubkeyLookup;
 import pgp.certificate_store.certificate.Certificate;
 import pgp.certificate_store.certificate.Key;
 import pgp.certificate_store.certificate.KeyMaterial;
+import pgp.certificate_store.certificate.KeyMaterialMerger;
 import pgp.certificate_store.exception.BadDataException;
 import pgp.certificate_store.exception.BadNameException;
 import pgp.certificate_store.exception.NotAStoreException;
@@ -18,6 +23,7 @@ import pgp.certificate_store.exception.NotAStoreException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -30,6 +36,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -37,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PGPCertificateDirectoryTest {
 
+    @SuppressWarnings("CharsetObjectCanBeUsed")
     private static final Charset UTF8 = Charset.forName("UTF8");
 
     private static final String HARRY_KEY = "-----BEGIN PGP PRIVATE KEY BLOCK-----\n" +
@@ -143,7 +151,10 @@ public class PGPCertificateDirectoryTest {
             "-----END PGP PUBLIC KEY BLOCK-----\n";
     private static final String CEDRIC_FP = "5e75bf20646bc1a98d3b1bc2fe9cd472987c4021";
 
-    private static Stream<PGPCertificateDirectory> provideTestSubjects() throws IOException, NotAStoreException {
+    private static final KeyMaterialMerger merger = new TestKeyMaterialMerger();
+
+    private static Stream<PGPCertificateDirectory> provideTestSubjects()
+            throws IOException, NotAStoreException {
         PGPCertificateDirectory inMemory = PGPCertificateDirectories.inMemoryCertificateDirectory(
                 new TestKeyMaterialReaderBackend());
 
@@ -159,18 +170,19 @@ public class PGPCertificateDirectoryTest {
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
-    public void lockDirectoryAndInsertWillFail(PGPCertificateDirectory directory) throws IOException, InterruptedException, BadDataException {
+    public void lockDirectoryAndInsertWillFail(PGPCertificateDirectory directory)
+            throws IOException, InterruptedException, BadDataException {
         // Manually lock the dir
         assertFalse(directory.backend.getLock().isLocked());
         directory.backend.getLock().lockDirectory();
         assertTrue(directory.backend.getLock().isLocked());
         assertFalse(directory.backend.getLock().tryLockDirectory());
 
-        Certificate inserted = directory.tryInsert(new ByteArrayInputStream(CEDRIC_CERT.getBytes(UTF8)), new TestKeyMaterialMerger());
+        Certificate inserted = directory.tryInsert(new ByteArrayInputStream(CEDRIC_CERT.getBytes(UTF8)), merger);
         assertNull(inserted);
 
         directory.backend.getLock().releaseDirectory();
-        inserted = directory.tryInsert(new ByteArrayInputStream(CEDRIC_CERT.getBytes(UTF8)), new TestKeyMaterialMerger());
+        inserted = directory.tryInsert(new ByteArrayInputStream(CEDRIC_CERT.getBytes(UTF8)), merger);
         assertNotNull(inserted);
     }
 
@@ -188,7 +200,7 @@ public class PGPCertificateDirectoryTest {
 
         ByteArrayInputStream bytesIn = new ByteArrayInputStream(CEDRIC_CERT.getBytes(UTF8));
 
-        Certificate certificate = directory.insert(bytesIn, new TestKeyMaterialMerger());
+        Certificate certificate = directory.insert(bytesIn, merger);
         assertEquals(CEDRIC_FP, certificate.getFingerprint(), "Fingerprint of inserted cert MUST match");
 
         Certificate get = directory.getByFingerprint(CEDRIC_FP);
@@ -207,7 +219,7 @@ public class PGPCertificateDirectoryTest {
         assertNull(directory.getTrustRoot());
 
         KeyMaterial trustRootMaterial = directory.insertTrustRoot(
-                new ByteArrayInputStream(HARRY_KEY.getBytes(UTF8)), new TestKeyMaterialMerger());
+                new ByteArrayInputStream(HARRY_KEY.getBytes(UTF8)), merger);
         assertNotNull(trustRootMaterial);
         assertTrue(trustRootMaterial instanceof Key);
         assertEquals(HARRY_FP, trustRootMaterial.getFingerprint());
@@ -217,8 +229,8 @@ public class PGPCertificateDirectoryTest {
         Certificate trustRootCert = directory.getTrustRootCertificate();
         assertEquals(HARRY_FP, trustRootCert.getFingerprint());
 
-        directory.tryInsert(new ByteArrayInputStream(RON_CERT.getBytes(UTF8)), new TestKeyMaterialMerger());
-        directory.insert(new ByteArrayInputStream(CEDRIC_CERT.getBytes(UTF8)), new TestKeyMaterialMerger());
+        directory.tryInsert(new ByteArrayInputStream(RON_CERT.getBytes(UTF8)), merger);
+        directory.insert(new ByteArrayInputStream(CEDRIC_CERT.getBytes(UTF8)), merger);
 
         Set<String> expected = new HashSet<>(Arrays.asList(RON_FP, CEDRIC_FP));
 
@@ -229,5 +241,105 @@ public class PGPCertificateDirectoryTest {
         assertFalse(fingerprints.hasNext());
 
         assertEquals(expected, actual);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void testGetTrustRootIfChanged(PGPCertificateDirectory directory)
+            throws BadDataException, IOException, InterruptedException {
+        KeyMaterial trustRootMaterial = directory.insertTrustRoot(
+                new ByteArrayInputStream(HARRY_KEY.getBytes(UTF8)), merger);
+
+        assertNotNull(trustRootMaterial.getTag());
+        Long tag = trustRootMaterial.getTag();
+        assertNull(directory.getTrustRootCertificateIfChanged(tag));
+        assertNotNull(directory.getTrustRootCertificateIfChanged(tag + 1));
+
+        Long oldTag = tag;
+        // "update" key
+        trustRootMaterial = directory.insertTrustRoot(
+                new ByteArrayInputStream(HARRY_KEY.getBytes(UTF8)), merger);
+        tag = trustRootMaterial.getTag();
+
+        assertNotEquals(oldTag, tag);
+        assertNotNull(directory.getTrustRootCertificateIfChanged(oldTag));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void testGetBySpecialNameIfChanged(PGPCertificateDirectory directory)
+            throws BadDataException, IOException, InterruptedException, BadNameException {
+        KeyMaterial specialName = directory.insertWithSpecialName(SpecialNames.TRUST_ROOT,
+                new ByteArrayInputStream(HARRY_KEY.getBytes(UTF8)), merger);
+
+        assertNotNull(specialName.getTag());
+        Long tag = specialName.getTag();
+        assertNull(directory.getBySpecialNameIfChanged(SpecialNames.TRUST_ROOT, tag));
+        assertNotNull(directory.getBySpecialNameIfChanged(SpecialNames.TRUST_ROOT, tag + 1));
+
+        Long oldTag = tag;
+        // "update" key
+        specialName = directory.insertWithSpecialName(SpecialNames.TRUST_ROOT,
+                new ByteArrayInputStream(HARRY_KEY.getBytes(UTF8)), merger);
+        tag = specialName.getTag();
+
+        assertNotEquals(oldTag, tag);
+        assertNotNull(directory.getBySpecialNameIfChanged(SpecialNames.TRUST_ROOT, oldTag));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void testGetByFingerprintIfChanged(PGPCertificateDirectory directory)
+            throws BadDataException, IOException, InterruptedException, BadNameException {
+        Certificate certificate = directory.insert(new ByteArrayInputStream(CEDRIC_CERT.getBytes(UTF8)), merger);
+        Long tag = certificate.getTag();
+        assertNotNull(tag);
+
+        assertNull(directory.getByFingerprintIfChanged(certificate.getFingerprint(), tag));
+        assertNotNull(directory.getByFingerprintIfChanged(certificate.getFingerprint(), tag + 1));
+
+        Long oldTag = tag;
+        // "update" cert
+        certificate = directory.insert(new ByteArrayInputStream(CEDRIC_CERT.getBytes(UTF8)), merger);
+        tag = certificate.getTag();
+
+        assertNotEquals(oldTag, tag);
+        assertNull(directory.getByFingerprintIfChanged(certificate.getFingerprint(), tag));
+        assertNotNull(directory.getByFingerprintIfChanged(certificate.getFingerprint(), oldTag));
+    }
+
+    @Test
+    public void testFileBasedCertificateDirectoryTagChangesWhenFileChanges() throws IOException, NotAStoreException, BadDataException, InterruptedException, BadNameException {
+        File tempDir = Files.createTempDirectory("file-based-changes").toFile();
+        tempDir.deleteOnExit();
+        PGPCertificateDirectory directory = PGPCertificateDirectories.fileBasedCertificateDirectory(
+                new TestKeyMaterialReaderBackend(),
+                tempDir,
+                new InMemorySubkeyLookup());
+        FileBasedCertificateDirectoryBackend.FilenameResolver resolver =
+                new FileBasedCertificateDirectoryBackend.FilenameResolver(tempDir);
+
+        // Insert certificate
+        Certificate certificate = directory.insert(new ByteArrayInputStream(CEDRIC_CERT.getBytes(UTF8)), merger);
+        Long tag = certificate.getTag();
+        assertNotNull(tag);
+        assertNull(directory.getByFingerprintIfChanged(certificate.getFingerprint(), tag));
+
+        Long oldTag = tag;
+
+        // Change the file on disk directly, this invalidates the tag due to changed modification date
+        File certFile = resolver.getCertFileByFingerprint(certificate.getFingerprint());
+        FileOutputStream fileOut = new FileOutputStream(certFile);
+        Streams.pipeAll(certificate.getInputStream(), fileOut);
+        fileOut.close();
+
+        // Old invalidated tag indicates a change, so the modified certificate is returned
+        certificate = directory.getByFingerprintIfChanged(certificate.getFingerprint(), oldTag);
+        assertNotNull(certificate);
+
+        // new tag is valid
+        tag = certificate.getTag();
+        assertNotEquals(oldTag, tag);
+        assertNull(directory.getByFingerprintIfChanged(certificate.getFingerprint(), tag));
     }
 }

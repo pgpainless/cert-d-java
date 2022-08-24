@@ -7,6 +7,7 @@ package pgp.cert_d.backend;
 import pgp.cert_d.PGPCertificateDirectory;
 import pgp.cert_d.SpecialNames;
 import pgp.certificate_store.certificate.Certificate;
+import pgp.certificate_store.certificate.Key;
 import pgp.certificate_store.certificate.KeyMaterial;
 import pgp.certificate_store.certificate.KeyMaterialMerger;
 import pgp.certificate_store.certificate.KeyMaterialReaderBackend;
@@ -25,6 +26,9 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -160,10 +164,12 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
             return null;
         }
 
+        long tag = getTagForFingerprint(fingerprint);
+
         FileInputStream fileIn = new FileInputStream(certFile);
         BufferedInputStream bufferedIn = new BufferedInputStream(fileIn);
 
-        Certificate certificate = reader.read(bufferedIn).asCertificate();
+        Certificate certificate = reader.read(bufferedIn, tag).asCertificate();
         if (!certificate.getFingerprint().equals(fingerprint)) {
             // TODO: Figure out more suitable exception
             throw new BadDataException();
@@ -179,9 +185,11 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
             return null;
         }
 
+        long tag = getTagForSpecialName(specialName);
+
         FileInputStream fileIn = new FileInputStream(certFile);
         BufferedInputStream bufferedIn = new BufferedInputStream(fileIn);
-        KeyMaterial keyMaterial = reader.read(bufferedIn);
+        KeyMaterial keyMaterial = reader.read(bufferedIn, tag);
 
         return keyMaterial;
     }
@@ -214,7 +222,8 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
                             @Override
                             Certificate get() throws BadDataException {
                                 try {
-                                    Certificate certificate = reader.read(new FileInputStream(certFile)).asCertificate();
+                                    long tag = getTag(certFile);
+                                    Certificate certificate = reader.read(new FileInputStream(certFile), tag).asCertificate();
                                     if (!(subdirectory.getName() + certFile.getName()).equals(certificate.getFingerprint())) {
                                         throw new BadDataException();
                                     }
@@ -246,7 +255,7 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
 
     @Override
     public KeyMaterial doInsertTrustRoot(InputStream data, KeyMaterialMerger merge) throws BadDataException, IOException {
-        KeyMaterial newCertificate = reader.read(data);
+        KeyMaterial newCertificate = reader.read(data, null);
         KeyMaterial existingCertificate;
         File certFile;
         try {
@@ -256,18 +265,22 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
             throw new BadDataException();
         }
 
-        if (existingCertificate != null && !newCertificate.getTag().equals(existingCertificate.getTag())) {
+        if (existingCertificate != null) {
             newCertificate = merge.merge(newCertificate, existingCertificate);
         }
 
-        writeToFile(newCertificate.getInputStream(), certFile);
-
+        long tag = writeToFile(newCertificate.getInputStream(), certFile);
+        if (newCertificate instanceof Key) {
+            newCertificate = new Key((Key) newCertificate, tag);
+        } else {
+            newCertificate = new Certificate((Certificate) newCertificate, tag);
+        }
         return newCertificate;
     }
 
     @Override
     public Certificate doInsert(InputStream data, KeyMaterialMerger merge) throws IOException, BadDataException {
-        KeyMaterial newCertificate = reader.read(data);
+        KeyMaterial newCertificate = reader.read(data, null);
         Certificate existingCertificate;
         File certFile;
         try {
@@ -277,18 +290,17 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
             throw new BadDataException();
         }
 
-        if (existingCertificate != null && !newCertificate.getTag().equals(existingCertificate.getTag())) {
+        if (existingCertificate != null) {
             newCertificate = merge.merge(newCertificate, existingCertificate);
         }
 
-        writeToFile(newCertificate.getInputStream(), certFile);
-
-        return newCertificate.asCertificate();
+        long tag = writeToFile(newCertificate.getInputStream(), certFile);
+        return new Certificate(newCertificate.asCertificate(), tag);
     }
 
     @Override
     public Certificate doInsertWithSpecialName(String specialName, InputStream data, KeyMaterialMerger merge) throws IOException, BadDataException, BadNameException {
-        KeyMaterial newCertificate = reader.read(data);
+        KeyMaterial newCertificate = reader.read(data, null);
         KeyMaterial existingCertificate;
         File certFile;
         try {
@@ -298,16 +310,41 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
             throw new BadDataException();
         }
 
-        if (existingCertificate != null && !newCertificate.getTag().equals(existingCertificate.getTag())) {
+        if (existingCertificate != null) {
             newCertificate = merge.merge(newCertificate, existingCertificate);
         }
 
-        writeToFile(newCertificate.getInputStream(), certFile);
-
-        return newCertificate.asCertificate();
+        long tag = writeToFile(newCertificate.getInputStream(), certFile);
+        return new Certificate(newCertificate.asCertificate(), tag);
     }
 
-    private void writeToFile(InputStream inputStream, File certFile)
+    @Override
+    public Long getTagForFingerprint(String fingerprint) throws BadNameException, IOException {
+        File file = resolver.getCertFileByFingerprint(fingerprint);
+        return getTag(file);
+    }
+
+    @Override
+    public Long getTagForSpecialName(String specialName) throws BadNameException, IOException {
+        File file = resolver.getCertFileBySpecialName(specialName);
+        return getTag(file);
+    }
+
+    private Long getTag(File file) throws IOException {
+        if (!file.exists()) {
+            throw new IllegalArgumentException("File MUST exist.");
+        }
+        Path path = file.toPath();
+        BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+
+        // On UNIX file systems, for example, fileKey() will return the device ID and inode
+        int fileId = attrs.fileKey().hashCode();
+        long lastMod = attrs.lastModifiedTime().toMillis();
+
+        return lastMod + (11L * fileId);
+    }
+
+    private long writeToFile(InputStream inputStream, File certFile)
             throws IOException {
         certFile.getParentFile().mkdirs();
         if (!certFile.exists() && !certFile.createNewFile()) {
@@ -324,6 +361,7 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
 
         inputStream.close();
         fileOut.close();
+        return getTag(certFile);
     }
 
     public static class FilenameResolver {

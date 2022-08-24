@@ -20,5 +20,5 @@ public interface KeyMaterialReaderBackend {
      * @throws IOException in case of an IO error
      * @throws BadDataException in case that the data stream does not contain a valid OpenPGP key/certificate
      */
-    KeyMaterial read(InputStream data) throws IOException, BadDataException;
+    KeyMaterial read(InputStream data, Long tag) throws IOException, BadDataException;
 }

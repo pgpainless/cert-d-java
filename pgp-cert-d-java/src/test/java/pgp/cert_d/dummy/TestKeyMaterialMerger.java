@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package pgp.cert_d;
+package pgp.cert_d.dummy;
 
 import pgp.certificate_store.certificate.KeyMaterial;
 import pgp.certificate_store.certificate.KeyMaterialMerger;
