@@ -16,7 +16,7 @@ apply plugin: 'ru.vyarus.animalsniffer'
 
 dependencies {
     // animal sniffer for ensuring Android API compatibility
-    signature "net.sf.androidscents.signature:android-api-level-${minAndroidSdk}:2.3.3_r2@signature"
+    signature "net.sf.androidscents.signature:android-api-level-${animalsnifferSignatureVersion}@signature"
 
     // JUnit for testing
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
