@@ -17,12 +17,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Implementation of the Shared PGP Certificate Directory.
+ *
+ * @see <a href="https://sequoia-pgp.gitlab.io/pgp-cert-d/">Shared PGP Certificate Directory Specification</a>
+ */
 public class PGPCertificateDirectory
         implements ReadOnlyPGPCertificateDirectory, WritingPGPCertificateDirectory, SubkeyLookup {
 
     final Backend backend;
     final SubkeyLookup subkeyLookup;
 
+    /**
+     * Constructor for a PGP certificate directory.
+     *
+     * @param backend storage backend
+     * @param subkeyLookup subkey lookup mechanism to map subkey-ids to certificates
+     */
     public PGPCertificateDirectory(Backend backend, SubkeyLookup subkeyLookup) {
         this.backend = backend;
         this.subkeyLookup = subkeyLookup;
@@ -189,30 +200,119 @@ public class PGPCertificateDirectory
         subkeyLookup.storeCertificateSubkeyIds(certificate, subkeyIds);
     }
 
+    /**
+     * Storage backend.
+     */
     public interface Backend {
 
+        /**
+         * Get the locking mechanism to write-lock the backend.
+         *
+         * @return lock
+         */
         LockingMechanism getLock();
 
+        /**
+         * Read a {@link Certificate} by its OpenPGP fingerprint.
+         *
+         * @param fingerprint fingerprint
+         * @return certificate
+         *
+         * @throws BadNameException if the fingerprint is malformed
+         * @throws IOException in case of an IO error
+         * @throws BadDataException if the certificate contains bad data
+         */
         Certificate readByFingerprint(String fingerprint) throws BadNameException, IOException, BadDataException;
 
+        /**
+         * Read a {@link Certificate} or {@link pgp.certificate_store.certificate.Key} by the given special name.
+         *
+         * @param specialName special name
+         * @return certificate or key
+         *
+         * @throws BadNameException if the special name is not known
+         * @throws IOException in case of an IO error
+         * @throws BadDataException if the certificate contains bad data
+         */
         KeyMaterial readBySpecialName(String specialName) throws BadNameException, IOException, BadDataException;
 
+        /**
+         * Return an {@link Iterator} of all {@link Certificate Certificates} in the store, except for certificates
+         * stored under a special name.
+         *
+         * @return iterator
+         */
         Iterator<Certificate> readItems();
 
+        /**
+         * Insert a {@link pgp.certificate_store.certificate.Key} or {@link Certificate} as trust-root.
+         *
+         * @param data input stream containing the key material
+         * @param merge callback to merge the key material with existing key material
+         * @return merged or inserted key material
+         *
+         * @throws BadDataException if the data stream or existing key material contains bad data
+         * @throws IOException in case of an IO error
+         */
         KeyMaterial doInsertTrustRoot(InputStream data, KeyMaterialMerger merge)
                 throws BadDataException, IOException;
 
+        /**
+         * Insert a {@link Certificate} identified by its fingerprint into the directory.
+         *
+         * @param data input stream containing the certificate data
+         * @param merge callback to merge the certificate with existing key material
+         * @return merged or inserted certificate
+         *
+         * @throws IOException in case of an IO error
+         * @throws BadDataException if the data stream or existing certificate contains bad data
+         */
         Certificate doInsert(InputStream data, KeyMaterialMerger merge)
                         throws IOException, BadDataException;
 
+        /**
+         * Insert a {@link pgp.certificate_store.certificate.Key} or {@link Certificate} under the given special name.
+         *
+         * @param specialName special name to identify the key material with
+         * @param data data stream containing the key or certificate
+         * @param merge callback to merge the key/certificate with existing key material
+         * @return certificate component of the merged or inserted key material
+         *
+         * @throws IOException in case of an IO error
+         * @throws BadDataException if the data stream or existing key material contains bad data
+         * @throws BadNameException if the special name is not known
+         */
         Certificate doInsertWithSpecialName(String specialName, InputStream data, KeyMaterialMerger merge)
                                 throws IOException, BadDataException, BadNameException;
 
+        /**
+         * Calculate the tag of the certificate with the given fingerprint.
+         *
+         * @param fingerprint fingerprint
+         * @return tag
+         *
+         * @throws BadNameException if the fingerprint is malformed
+         * @throws IOException in case of an IO error
+         * @throws IllegalArgumentException if the certificate does not exist
+         */
         Long getTagForFingerprint(String fingerprint) throws BadNameException, IOException;
 
+        /**
+         * Calculate the tag of the certificate identified by the given special name.
+         *
+         * @param specialName special name
+         * @return tag
+         *
+         * @throws BadNameException if the special name is not known
+         * @throws IOException in case of an IO error
+         * @throws IllegalArgumentException if the certificate or key does not exist
+         */
         Long getTagForSpecialName(String specialName) throws BadNameException, IOException;
     }
 
+    /**
+     * Interface for a write-locking mechanism.
+     */
     public interface LockingMechanism {
 
         /**
@@ -234,6 +334,11 @@ public class PGPCertificateDirectory
          */
         boolean tryLockDirectory() throws IOException;
 
+        /**
+         * Return true if the lock is in locked state.
+         *
+         * @return true if locked
+         */
         boolean isLocked();
 
         /**

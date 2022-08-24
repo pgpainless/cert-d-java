@@ -15,6 +15,7 @@ public interface KeyMaterialReaderBackend {
      * Read a {@link KeyMaterial} (either {@link Key} or {@link Certificate}) from the given {@link InputStream}.
      *
      * @param data input stream containing the binary representation of the key.
+     * @param tag tag for the key material. Might be null.
      * @return key or certificate object
      *
      * @throws IOException in case of an IO error
