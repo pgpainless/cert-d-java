@@ -6,6 +6,9 @@ package pgp.cert_d.subkey_lookup;
 
 import java.io.File;
 
+/**
+ * Factory class to instantiate {@link InMemorySubkeyLookup} objects.
+ */
 public class InMemorySubkeyLookupFactory implements SubkeyLookupFactory {
     @Override
     public SubkeyLookup createFileBasedInstance(File baseDirectory) {

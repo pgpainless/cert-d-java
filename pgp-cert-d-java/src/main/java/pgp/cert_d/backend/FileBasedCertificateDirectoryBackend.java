@@ -35,12 +35,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * Implementation of {@link PGPCertificateDirectory.Backend} which stores certificates in a directory structure.
+ *
+ * @see <a href="https://sequoia-pgp.gitlab.io/pgp-cert-d/#name-implementation">Shared PGP Certificate Directory</a>
+ */
 public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirectory.Backend {
 
     private abstract static class Lazy<E> {
         abstract E get() throws BadDataException;
     }
 
+    /**
+     * Locking mechanism which uses a lock file to synchronize write-access to the store.
+     */
     private static class FileLockingMechanism implements PGPCertificateDirectory.LockingMechanism {
 
         private final File lockFile;
@@ -364,6 +372,9 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
         return getTag(certFile);
     }
 
+    /**
+     * Class to resolve file names from certificate fingerprints / special names.
+     */
     public static class FilenameResolver {
 
         private final File baseDirectory;

@@ -6,6 +6,9 @@ package pgp.cert_d.subkey_lookup;
 
 import java.io.File;
 
+/**
+ * Factory class to instantiate different {@link SubkeyLookup} implementations.
+ */
 public interface SubkeyLookupFactory {
 
     /**
