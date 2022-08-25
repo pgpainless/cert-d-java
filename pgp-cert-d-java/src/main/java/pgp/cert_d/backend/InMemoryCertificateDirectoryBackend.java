@@ -21,6 +21,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Implementation of the {@link PGPCertificateDirectory.Backend} which stores key material in-memory.
+ * It uses object locking with {@link #wait()} and {@link #notify()} to synchronize write-access.
+ */
 public class InMemoryCertificateDirectoryBackend implements PGPCertificateDirectory.Backend {
 
     protected static class ObjectLockingMechanism implements PGPCertificateDirectory.LockingMechanism {

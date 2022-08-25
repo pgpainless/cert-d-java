@@ -70,7 +70,7 @@ public class PGPCertificateDirectoryTest {
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
-    public void lockDirectoryAndInsertWillFail(PGPCertificateDirectory directory)
+    public void lockDirectoryAndTryInsertWillFail(PGPCertificateDirectory directory)
             throws IOException, InterruptedException, BadDataException {
         // Manually lock the dir
         assertFalse(directory.backend.getLock().isLocked());
@@ -83,6 +83,40 @@ public class PGPCertificateDirectoryTest {
 
         directory.backend.getLock().releaseDirectory();
         inserted = directory.tryInsert(TestKeys.getCedricCert(), merger);
+        assertNotNull(inserted);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void lockDirectoryAndTryInsertTrustRootWillFail(PGPCertificateDirectory directory)
+            throws IOException, InterruptedException, BadDataException {
+        // Manually lock the dir
+        assertFalse(directory.backend.getLock().isLocked());
+        directory.backend.getLock().lockDirectory();
+        assertTrue(directory.backend.getLock().isLocked());
+
+        KeyMaterial inserted = directory.tryInsertTrustRoot(TestKeys.getHarryKey(), merger);
+        assertNull(inserted);
+
+        directory.backend.getLock().releaseDirectory();
+        inserted = directory.tryInsertTrustRoot(TestKeys.getHarryKey(), merger);
+        assertNotNull(inserted);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void lockDirectoryAndTryInsertWithSpecialNameWillFail(PGPCertificateDirectory directory)
+            throws IOException, InterruptedException, BadDataException, BadNameException {
+        // Manually lock the dir
+        assertFalse(directory.backend.getLock().isLocked());
+        directory.backend.getLock().lockDirectory();
+        assertTrue(directory.backend.getLock().isLocked());
+
+        Certificate inserted = directory.tryInsertWithSpecialName(SpecialNames.TRUST_ROOT, TestKeys.getHarryKey(), merger);
+        assertNull(inserted);
+
+        directory.backend.getLock().releaseDirectory();
+        inserted = directory.tryInsertWithSpecialName(SpecialNames.TRUST_ROOT, TestKeys.getHarryKey(), merger);
         assertNotNull(inserted);
     }
 
