@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC0-1.0
 
 # Cert-D-Java Changelog
 
-## 0.1.2-SNAPSHOT
+## 0.2.0
 - `pgp-certificate-store`:
   - Rework `Certificate`, `Key` to inherit from `KeyMaterial`
   - Rename `CertificateReaderBackend` to `KeyMaterialReaderBackend`

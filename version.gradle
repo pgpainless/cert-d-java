@@ -4,8 +4,8 @@
 
 allprojects {
     ext {
-        shortVersion = '0.1.2'
-        isSnapshot = true
+        shortVersion = '0.2.0'
+        isSnapshot = false
         minAndroidSdk = 26
         animalsnifferSignatureVersion = "$minAndroidSdk:8.0.0_r2"
         javaSourceCompatibility = 1.8
