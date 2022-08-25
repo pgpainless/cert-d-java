@@ -434,24 +434,6 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
             return new File(getBaseDirectory(), specialName);
         }
 
-        /**
-         * Calculate the file location for the key addressed using the given special name.
-         * For known special names, see {@link SpecialNames}.
-         *
-         * @param specialName special name (e.g. "trust-root")
-         * @return absolute key file location
-         *
-         * @throws BadNameException in case the given special name is not known
-         */
-        public File getKeyFileBySpecialName(String specialName)
-                throws BadNameException {
-            if (!isSpecialName(specialName)) {
-                throw new BadNameException(String.format("%s is not a known special name", specialName));
-            }
-
-            return new File(getBaseDirectory(), specialName + ".key");
-        }
-
         private boolean isFingerprint(String fingerprint) {
             return openPgpV4FingerprintPattern.matcher(fingerprint).matches();
         }
