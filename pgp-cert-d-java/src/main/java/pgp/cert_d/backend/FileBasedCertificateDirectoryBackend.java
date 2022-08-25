@@ -386,7 +386,8 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
     public static class FilenameResolver {
 
         private final File baseDirectory;
-        private final Pattern openPgpV4FingerprintPattern = Pattern.compile("^[a-f0-9]{40}$");
+        // matches v4 and v5 fingerprints (v4 = 40 hex chars, v5 = 64 hex chars)
+        private final Pattern openPgpFingerprint = Pattern.compile("^[a-f0-9]{40}([a-f0-9]{24})?$");
 
         public FilenameResolver(File baseDirectory) {
             this.baseDirectory = baseDirectory;
@@ -435,7 +436,7 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
         }
 
         private boolean isFingerprint(String fingerprint) {
-            return openPgpV4FingerprintPattern.matcher(fingerprint).matches();
+            return openPgpFingerprint.matcher(fingerprint).matches();
         }
 
         private boolean isSpecialName(String specialName) {
