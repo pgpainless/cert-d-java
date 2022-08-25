@@ -217,6 +217,10 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
                     }
                 });
 
+                if (subdirectories == null) {
+                    subdirectories = new File[0];
+                }
+
                 for (File subdirectory : subdirectories) {
                     File[] files = subdirectory.listFiles(new FileFilter() {
                         @Override
@@ -224,6 +228,10 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
                             return file.isFile() && file.getName().matches("^[a-f0-9]{38}$");
                         }
                     });
+
+                    if (files == null) {
+                        files = new File[0];
+                    }
 
                     for (File certFile : files) {
                         certificateQueue.add(new Lazy<Certificate>() {
