@@ -12,8 +12,11 @@ SPDX-License-Identifier: CC0-1.0
   - Rename `CertificateMerger` to `KeyMaterialMerger`
   - Rework `PGPCertificateStore` class
 - `pgp-cert-d-java`:
+  - Increase minimum Android API level to 26
+  - Add `PGPCertificateDirectories` factory class
   - Rework `PGPCertificateDirectory` class by separating out backend logic
   - Split interface into `ReadOnlyPGPCertificateDirectory` and `WritingPGPCertificateDirectory`
+  - `FileBasedCertificateDirectoryBackend`: Calculate tag based on file attributes (inode)
 - `pgp-cert-d-java-jdbc-sqlite-lookup`:
   - Add `DatabaseSubkeyLookupFactory`
 
