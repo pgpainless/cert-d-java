@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC0-1.0
 
 # Cert-D-Java Changelog
 
-## 0.2.1-SNAPSHOT
+## 0.2.1
 - Throw `NoSuchElementException` when querying non-existent certificates
 
 ## 0.2.0
