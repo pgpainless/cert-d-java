@@ -12,6 +12,7 @@ import pgp.certificate_store.exception.BadNameException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Interface for an OpenPGP certificate (public key) store.
@@ -20,7 +21,6 @@ public interface PGPCertificateStore {
 
     /**
      * Return the certificate that matches the given identifier.
-     * If no matching certificate can be found, return null.
      *
      * @param identifier identifier for a certificate.
      * @return certificate or null
@@ -28,6 +28,7 @@ public interface PGPCertificateStore {
      * @throws IOException in case of an IO-error
      * @throws BadNameException if the identifier is invalid
      * @throws BadDataException if the certificate file contains invalid data
+     * @throws NoSuchElementException if no such certificate is found
      */
     Certificate getCertificate(String identifier)
             throws IOException, BadNameException, BadDataException;
@@ -45,6 +46,7 @@ public interface PGPCertificateStore {
      * @throws IOException in case of an IO-error
      * @throws BadNameException if the identifier is invalid
      * @throws BadDataException if the certificate file contains invalid data
+     * @throws NoSuchElementException if no such certificate is found
      */
     Certificate getCertificateIfChanged(String identifier, Long tag)
             throws IOException, BadNameException, BadDataException;
