@@ -6,27 +6,22 @@ package pgp.cert_d;
 
 import org.bouncycastle.util.io.Streams;
 import org.junit.jupiter.api.Named;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import pgp.cert_d.backend.FileBasedCertificateDirectoryBackend;
 import pgp.cert_d.dummy.TestKeyMaterialMerger;
 import pgp.cert_d.dummy.TestKeyMaterialReaderBackend;
 import pgp.cert_d.subkey_lookup.InMemorySubkeyLookup;
-import pgp.cert_d.subkey_lookup.SubkeyLookup;
 import pgp.certificate_store.certificate.Certificate;
 import pgp.certificate_store.certificate.Key;
 import pgp.certificate_store.certificate.KeyMaterial;
 import pgp.certificate_store.certificate.KeyMaterialMerger;
-import pgp.certificate_store.certificate.KeyMaterialReaderBackend;
 import pgp.certificate_store.exception.BadDataException;
 import pgp.certificate_store.exception.BadNameException;
 import pgp.certificate_store.exception.NotAStoreException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -45,8 +40,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static pgp.cert_d.TestKeys.CEDRIC_FP;
 import static pgp.cert_d.TestKeys.HARRY_FP;
 import static pgp.cert_d.TestKeys.RON_FP;
@@ -277,66 +270,42 @@ public class PGPCertificateDirectoryTest {
         assertNotNull(directory.getByFingerprintIfChanged(certificate.getFingerprint(), tag + 1));
     }
 
-    @Test
-    public void testFileBasedCertificateDirectoryTagChangesWhenFileChanges() throws IOException, NotAStoreException, BadDataException, InterruptedException, BadNameException {
-        File tempDir = Files.createTempDirectory("file-based-changes").toFile();
-        tempDir.deleteOnExit();
-        PGPCertificateDirectory directory = PGPCertificateDirectories.fileBasedCertificateDirectory(
-                new TestKeyMaterialReaderBackend(),
-                tempDir,
-                new InMemorySubkeyLookup());
-        FileBasedCertificateDirectoryBackend.FilenameResolver resolver =
-                new FileBasedCertificateDirectoryBackend.FilenameResolver(tempDir);
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void testOverwriteTrustRoot(PGPCertificateDirectory directory)
+            throws BadDataException, IOException, InterruptedException {
+        directory.insertTrustRoot(TestKeys.getHarryKey(), merger);
+        assertEquals(HARRY_FP, directory.getTrustRoot().getFingerprint());
+        assertTrue(directory.getTrustRoot() instanceof Key);
 
-        // Insert certificate
-        Certificate certificate = directory.insert(TestKeys.getCedricCert(), merger);
-        Long tag = certificate.getTag();
-        assertNotNull(tag);
-        assertNull(directory.getByFingerprintIfChanged(certificate.getFingerprint(), tag));
-
-        Long oldTag = tag;
-
-        Thread.sleep(10);
-        // Change the file on disk directly, this invalidates the tag due to changed modification date
-        File certFile = resolver.getCertFileByFingerprint(certificate.getFingerprint());
-        FileOutputStream fileOut = new FileOutputStream(certFile);
-        Streams.pipeAll(certificate.getInputStream(), fileOut);
-        fileOut.write("\n".getBytes());
-        fileOut.close();
-
-        // Old invalidated tag indicates a change, so the modified certificate is returned
-        certificate = directory.getByFingerprintIfChanged(certificate.getFingerprint(), oldTag);
-        assertNotNull(certificate);
-
-        // new tag is valid
-        tag = certificate.getTag();
-        assertNotEquals(oldTag, tag);
-        assertNull(directory.getByFingerprintIfChanged(certificate.getFingerprint(), tag));
+        directory.insertTrustRoot(TestKeys.getCedricCert(), merger);
+        assertEquals(CEDRIC_FP, directory.getTrustRoot().getFingerprint());
+        assertTrue(directory.getTrustRoot() instanceof Certificate);
     }
 
-    @Test
-    public void fileBasedStoreInWriteProtectedAreaThrows() {
-        File root = new File("/");
-        assumeTrue(root.exists(), "This test only runs on unix-like systems");
-        File baseDirectory = new File(root, "pgp.cert.d");
-        assumeFalse(baseDirectory.mkdirs(), "This test assumes that we cannot create dirs in /");
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void testOverwriteSpecialName(PGPCertificateDirectory directory)
+            throws BadDataException, IOException, InterruptedException, BadNameException {
+        directory.insertWithSpecialName(SpecialNames.TRUST_ROOT, TestKeys.getRonCert(), merger);
+        KeyMaterial bySpecialName = directory.getBySpecialName(SpecialNames.TRUST_ROOT);
+        assertEquals(RON_FP, bySpecialName.getFingerprint());
 
-        KeyMaterialReaderBackend reader = new TestKeyMaterialReaderBackend();
-        SubkeyLookup lookup = new InMemorySubkeyLookup();
-        assertThrows(NotAStoreException.class, () -> PGPCertificateDirectories.fileBasedCertificateDirectory(
-                reader, baseDirectory, lookup));
+        directory.insertWithSpecialName(SpecialNames.TRUST_ROOT, TestKeys.getHarryKey(), merger);
+        assertEquals(HARRY_FP, directory.getBySpecialName(SpecialNames.TRUST_ROOT).getFingerprint());
     }
 
-    @Test
-    public void fileBasedStoreOnFileThrows() throws IOException {
-        File tempDir = Files.createTempDirectory("containsAFile").toFile();
-        tempDir.deleteOnExit();
-        File baseDir = new File(tempDir, "pgp.cert.d");
-        baseDir.createNewFile(); // this is a file, not a dir
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void testOverwriteByFingerprint(PGPCertificateDirectory directory)
+            throws BadDataException, IOException, InterruptedException, BadNameException {
+        directory.insert(TestKeys.getRonCert(), merger);
+        Certificate extracted = directory.getByFingerprint(RON_FP);
+        assertEquals(RON_FP, extracted.getFingerprint());
 
-        KeyMaterialReaderBackend reader = new TestKeyMaterialReaderBackend();
-        SubkeyLookup lookup = new InMemorySubkeyLookup();
-        assertThrows(NotAStoreException.class, () -> PGPCertificateDirectories.fileBasedCertificateDirectory(
-                reader, baseDir, lookup));
+        directory.insert(TestKeys.getRonCert(), merger);
+        extracted = directory.getByFingerprint(RON_FP);
+        assertEquals(RON_FP, extracted.getFingerprint());
     }
+
 }
