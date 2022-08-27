@@ -17,6 +17,7 @@ import pgp.certificate_store.exception.BadNameException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -52,7 +53,7 @@ public class PGPCertificateStoreAdapterTest {
     @Test
     public void testInsertGetCertificate()
             throws BadDataException, IOException, InterruptedException, BadNameException {
-        assertNull(adapter.getCertificate(TestKeys.CEDRIC_FP));
+        assertThrows(NoSuchElementException.class, () -> adapter.getCertificate(TestKeys.CEDRIC_FP));
         assertFalse(adapter.getCertificates().hasNext());
 
         Certificate certificate = adapter.insertCertificate(TestKeys.getCedricCert(), merger);
@@ -70,7 +71,7 @@ public class PGPCertificateStoreAdapterTest {
     @Test
     public void testInsertGetTrustRoot()
             throws BadDataException, BadNameException, IOException, InterruptedException {
-        assertNull(adapter.getCertificate(SpecialNames.TRUST_ROOT));
+        assertThrows(NoSuchElementException.class, () -> adapter.getCertificate(SpecialNames.TRUST_ROOT));
 
         Certificate certificate = adapter.insertCertificateBySpecialName(
                 SpecialNames.TRUST_ROOT, TestKeys.getHarryKey(), merger);

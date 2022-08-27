@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -66,6 +67,55 @@ public class PGPCertificateDirectoryTest {
         return Stream.of(
                 Arguments.of(Named.of("InMemoryCertificateDirectory", inMemory)),
                 Arguments.of(Named.of("FileBasedCertificateDirectory", fileBased)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void getNonExistentCertByFingerprintThrowsNoSuchElementException(PGPCertificateDirectory directory) {
+        assertThrows(NoSuchElementException.class, () ->
+                directory.getByFingerprint("0000000000000000000000000000000000000000"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void getNonExistentCertByFingerprintIfChangedThrowsNoSuchElementException(PGPCertificateDirectory directory) {
+        assertThrows(NoSuchElementException.class, () ->
+                directory.getByFingerprintIfChanged("0000000000000000000000000000000000000000", 12));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void getNonExistentCertBySpecialNameThrowsNoSuchElementException(PGPCertificateDirectory directory) {
+        assertThrows(NoSuchElementException.class, () ->
+                directory.getBySpecialName(SpecialNames.TRUST_ROOT));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void getNonExistentCertBySpecialNameIfChangedThrowsNoSuchElementException(PGPCertificateDirectory directory) {
+        assertThrows(NoSuchElementException.class, () ->
+                directory.getBySpecialNameIfChanged(SpecialNames.TRUST_ROOT, 12));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void getNonExistentTrustRootThrowsNoSuchElementException(PGPCertificateDirectory directory) {
+        assertThrows(NoSuchElementException.class, () ->
+                directory.getTrustRoot());
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void getNonExistentTrustRootIfChangedThrowsNoSuchElementException(PGPCertificateDirectory directory) {
+        assertThrows(NoSuchElementException.class, () ->
+                directory.getTrustRootCertificateIfChanged(12));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideTestSubjects")
+    public void getNonExistentTrustRootCertificateThrowsNoSuchElementException(PGPCertificateDirectory directory) {
+        assertThrows(NoSuchElementException.class, () ->
+                directory.getTrustRootCertificate());
     }
 
     @ParameterizedTest
@@ -130,7 +180,7 @@ public class PGPCertificateDirectoryTest {
     @MethodSource("provideTestSubjects")
     public void testInsertAndGetSingleCert(PGPCertificateDirectory directory)
             throws BadDataException, IOException, InterruptedException, BadNameException {
-        assertNull(directory.getByFingerprint(CEDRIC_FP), "Empty directory MUST NOT contain certificate");
+        assertThrows(NoSuchElementException.class, () -> directory.getByFingerprint(CEDRIC_FP), "Empty directory MUST NOT contain certificate");
 
         Certificate certificate = directory.insert(TestKeys.getCedricCert(), merger);
         assertEquals(CEDRIC_FP, certificate.getFingerprint(), "Fingerprint of inserted cert MUST match");
@@ -148,7 +198,7 @@ public class PGPCertificateDirectoryTest {
     @MethodSource("provideTestSubjects")
     public void testInsertAndGetTrustRootAndCert(PGPCertificateDirectory directory)
             throws BadDataException, IOException, InterruptedException {
-        assertNull(directory.getTrustRoot());
+        assertThrows(NoSuchElementException.class, () -> directory.getTrustRoot());
 
         KeyMaterial trustRootMaterial = directory.insertTrustRoot(
                 TestKeys.getHarryKey(), merger);
@@ -188,6 +238,7 @@ public class PGPCertificateDirectoryTest {
         assertNotNull(directory.getTrustRootCertificateIfChanged(tag + 1));
 
         Long oldTag = tag;
+        Thread.sleep(10);
         // "update" key
         trustRootMaterial = directory.insertTrustRoot(
                 TestKeys.getHarryKey(), merger);
@@ -241,10 +292,12 @@ public class PGPCertificateDirectoryTest {
 
         Long oldTag = tag;
 
+        Thread.sleep(10);
         // Change the file on disk directly, this invalidates the tag due to changed modification date
         File certFile = resolver.getCertFileByFingerprint(certificate.getFingerprint());
         FileOutputStream fileOut = new FileOutputStream(certFile);
         Streams.pipeAll(certificate.getInputStream(), fileOut);
+        fileOut.write("\n".getBytes());
         fileOut.close();
 
         // Old invalidated tag indicates a change, so the modified certificate is returned

@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.regex.Pattern;
 
 /**
@@ -348,7 +349,7 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
 
     private Long getTag(File file) throws IOException {
         if (!file.exists()) {
-            throw new IllegalArgumentException("File MUST exist.");
+            throw new NoSuchElementException();
         }
         Path path = file.toPath();
         BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);

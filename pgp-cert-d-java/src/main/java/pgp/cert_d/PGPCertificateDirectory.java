@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -46,13 +48,17 @@ public class PGPCertificateDirectory
         if (!openPgpV4FingerprintPattern.matcher(fingerprint).matches()) {
             throw new BadNameException();
         }
-        return backend.readByFingerprint(fingerprint);
+        Certificate certificate = backend.readByFingerprint(fingerprint);
+        if (certificate == null) {
+            throw new NoSuchElementException();
+        }
+        return certificate;
     }
 
     @Override
     public Certificate getByFingerprintIfChanged(String fingerprint, long tag)
             throws IOException, BadNameException, BadDataException {
-        if (tag != backend.getTagForFingerprint(fingerprint)) {
+        if (!Objects.equals(tag, backend.getTagForFingerprint(fingerprint))) {
             return getByFingerprint(fingerprint);
         }
         return null;
@@ -66,13 +72,13 @@ public class PGPCertificateDirectory
         if (keyMaterial != null) {
             return keyMaterial.asCertificate();
         }
-        return null;
+        throw new NoSuchElementException();
     }
 
     @Override
     public Certificate getBySpecialNameIfChanged(String specialName, long tag)
             throws IOException, BadNameException, BadDataException {
-        if (tag != backend.getTagForSpecialName(specialName)) {
+        if (!Objects.equals(tag, backend.getTagForSpecialName(specialName))) {
             return getBySpecialName(specialName);
         }
         return null;
@@ -121,7 +127,11 @@ public class PGPCertificateDirectory
     @Override
     public KeyMaterial getTrustRoot() throws IOException, BadDataException {
         try {
-            return backend.readBySpecialName(SpecialNames.TRUST_ROOT);
+            KeyMaterial keyMaterial = backend.readBySpecialName(SpecialNames.TRUST_ROOT);
+            if (keyMaterial == null) {
+                throw new NoSuchElementException();
+            }
+            return keyMaterial;
         } catch (BadNameException e) {
             throw new AssertionError("'" + SpecialNames.TRUST_ROOT + "' is implementation MUST");
         }
