@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
 
 This repository contains a number of modules defining OpenPGP certificate storage for Java and Android applications.
 
-The module [pgp-certificate-store](pgp-certificate-store] defines generalized
+The module [pgp-certificate-store](pgp-certificate-store) defines generalized
 interfaces for OpenPGP Certificate storage.
 It can be used by applications and libraries such as
 [PGPainless](https://pgpainless.org/) for certificate management.
