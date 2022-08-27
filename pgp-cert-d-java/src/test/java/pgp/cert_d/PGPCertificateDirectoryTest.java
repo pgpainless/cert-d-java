@@ -14,10 +14,12 @@ import pgp.cert_d.backend.FileBasedCertificateDirectoryBackend;
 import pgp.cert_d.dummy.TestKeyMaterialMerger;
 import pgp.cert_d.dummy.TestKeyMaterialReaderBackend;
 import pgp.cert_d.subkey_lookup.InMemorySubkeyLookup;
+import pgp.cert_d.subkey_lookup.SubkeyLookup;
 import pgp.certificate_store.certificate.Certificate;
 import pgp.certificate_store.certificate.Key;
 import pgp.certificate_store.certificate.KeyMaterial;
 import pgp.certificate_store.certificate.KeyMaterialMerger;
+import pgp.certificate_store.certificate.KeyMaterialReaderBackend;
 import pgp.certificate_store.exception.BadDataException;
 import pgp.certificate_store.exception.BadNameException;
 import pgp.certificate_store.exception.NotAStoreException;
@@ -43,6 +45,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static pgp.cert_d.TestKeys.CEDRIC_FP;
 import static pgp.cert_d.TestKeys.HARRY_FP;
 import static pgp.cert_d.TestKeys.RON_FP;
@@ -308,5 +312,31 @@ public class PGPCertificateDirectoryTest {
         tag = certificate.getTag();
         assertNotEquals(oldTag, tag);
         assertNull(directory.getByFingerprintIfChanged(certificate.getFingerprint(), tag));
+    }
+
+    @Test
+    public void fileBasedStoreInWriteProtectedAreaThrows() {
+        File root = new File("/");
+        assumeTrue(root.exists(), "This test only runs on unix-like systems");
+        File baseDirectory = new File(root, "pgp.cert.d");
+        assumeFalse(baseDirectory.mkdirs(), "This test assumes that we cannot create dirs in /");
+
+        KeyMaterialReaderBackend reader = new TestKeyMaterialReaderBackend();
+        SubkeyLookup lookup = new InMemorySubkeyLookup();
+        assertThrows(NotAStoreException.class, () -> PGPCertificateDirectories.fileBasedCertificateDirectory(
+                reader, baseDirectory, lookup));
+    }
+
+    @Test
+    public void fileBasedStoreOnFileThrows() throws IOException {
+        File tempDir = Files.createTempDirectory("containsAFile").toFile();
+        tempDir.deleteOnExit();
+        File baseDir = new File(tempDir, "pgp.cert.d");
+        baseDir.createNewFile(); // this is a file, not a dir
+
+        KeyMaterialReaderBackend reader = new TestKeyMaterialReaderBackend();
+        SubkeyLookup lookup = new InMemorySubkeyLookup();
+        assertThrows(NotAStoreException.class, () -> PGPCertificateDirectories.fileBasedCertificateDirectory(
+                reader, baseDir, lookup));
     }
 }

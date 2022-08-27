@@ -5,6 +5,9 @@ SPDX-License-Identifier: CC0-1.0
 
 # Cert-D-Java Changelog
 
+## 0.2.1-SNAPSHOT
+- Throw `NoSuchElementException` when querying non-existent certificates
+
 ## 0.2.0
 - `pgp-certificate-store`:
   - Rework `Certificate`, `Key` to inherit from `KeyMaterial`
