@@ -18,7 +18,7 @@ public class BaseDirectoryProviderTest {
     public void testGetDefaultBaseDir_Linux() {
         assumeTrue(System.getProperty("os.name").equalsIgnoreCase("linux"));
         File baseDir = BaseDirectoryProvider.getDefaultBaseDirForOS("linux");
-        assertTrue(baseDir.getAbsolutePath().endsWith("/.local/share/pgp.cert.d"));
+        assertTrue(baseDir.getAbsolutePath().endsWith("pgp.cert.d"));
     }
 
     @Test
