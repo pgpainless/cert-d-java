@@ -5,6 +5,9 @@ SPDX-License-Identifier: CC0-1.0
 
 # Cert-D-Java Changelog
 
+## 0.2.2-SNAPSHOT
+- Bump Bouncy Castle to `1.72`
+
 ## 0.2.1
 - Throw `NoSuchElementException` when querying non-existent certificates
 
