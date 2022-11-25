@@ -32,7 +32,7 @@ dependencies {
     testImplementation project(":pgp-cert-d-java-jdbc-sqlite-lookup")
 
     testImplementation "org.bouncycastle:bcprov-jdk15to18:$bouncycastleVersion"
-    testImplementation "org.bouncycastle:bcpg-jdk15to18:$bouncycastleVersion"
+    testImplementation "org.bouncycastle:bcpg-jdk15to18:$bouncyPgVersion"
 }
 
 animalsniffer {
