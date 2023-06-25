@@ -82,7 +82,7 @@ public interface ReadOnlyPGPCertificateDirectory {
      * Get the certificate identified by the given special name.
      *
      * @param specialName special name
-     * @return certificate or null
+     * @return certificate
      *
      * @throws IOException in case of an IO error
      * @throws BadNameException if the special name is not known
