@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC0-1.0
 
 # Cert-D-Java Changelog
 
-## 0.2.2-SNAPSHOT
+## 0.2.2
 - Bump Bouncy Castle to `1.75`
 
 ## 0.2.1
