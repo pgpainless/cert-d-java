@@ -7,6 +7,7 @@ SPDX-License-Identifier: CC0-1.0
 
 ## 0.2.2
 - Bump Bouncy Castle to `1.75`
+- Bump `sqlite-jdbc` to `3.42.0.0`
 
 ## 0.2.1
 - Throw `NoSuchElementException` when querying non-existent certificates
