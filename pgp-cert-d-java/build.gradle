@@ -27,8 +27,8 @@ dependencies {
     // SQL Subkey table
     testImplementation project(":pgp-cert-d-java-jdbc-sqlite-lookup")
 
-    testImplementation "org.bouncycastle:bcprov-jdk15to18:$bouncycastleVersion"
-    testImplementation "org.bouncycastle:bcpg-jdk15to18:$bouncyPgVersion"
+    testImplementation "org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion"
+    testImplementation "org.bouncycastle:bcpg-jdk18on:$bouncyPgVersion"
 }
 
 test {
