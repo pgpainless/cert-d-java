@@ -12,11 +12,7 @@ repositories {
     mavenCentral()
 }
 
-apply plugin: 'ru.vyarus.animalsniffer'
-
 dependencies {
-    // animal sniffer for ensuring Android API compatibility
-    signature "net.sf.androidscents.signature:android-api-level-${animalsnifferSignatureVersion}@signature"
 
     // JUnit
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
@@ -33,10 +29,6 @@ dependencies {
 
     testImplementation "org.bouncycastle:bcprov-jdk15to18:$bouncycastleVersion"
     testImplementation "org.bouncycastle:bcpg-jdk15to18:$bouncyPgVersion"
-}
-
-animalsniffer {
-    sourceSets = [sourceSets.main]
 }
 
 test {
