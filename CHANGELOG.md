@@ -5,6 +5,13 @@ SPDX-License-Identifier: CC0-1.0
 
 # Cert-D-Java Changelog
 
+## 0.2.3-SNAPSHOT
+- Bump Bouncy Castle to `1.82` and switch to `jdk18on`-variants
+- Upgrade build system
+  - Bump gradle to `8.8`
+  - Bump logback to `1.5.13`
+  - Raise minimal JVM level to 11
+
 ## 0.2.2
 - Bump Bouncy Castle to `1.75`
 - Bump `sqlite-jdbc` to `3.42.0.0`
