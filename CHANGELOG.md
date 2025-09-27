@@ -5,7 +5,7 @@ SPDX-License-Identifier: CC0-1.0
 
 # Cert-D-Java Changelog
 
-## 0.2.3-SNAPSHOT
+## 0.2.3
 - Bump Bouncy Castle to `1.82` and switch to `jdk18on`-variants
 - Upgrade build system
   - Bump gradle to `8.8`
