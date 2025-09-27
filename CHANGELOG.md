@@ -5,6 +5,9 @@ SPDX-License-Identifier: CC0-1.0
 
 # Cert-D-Java Changelog
 
+## 0.2.4-SNAPSHOT
+- Add constructor parameters to `BadDataException`
+
 ## 0.2.3
 - Bump Bouncy Castle to `1.82` and switch to `jdk18on`-variants
 - Upgrade build system

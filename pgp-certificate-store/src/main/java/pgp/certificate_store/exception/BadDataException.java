@@ -9,4 +9,15 @@ package pgp.certificate_store.exception;
  */
 public class BadDataException extends Exception {
 
+    public BadDataException(Throwable cause) {
+        super(cause);
+    }
+
+    public BadDataException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public BadDataException(String message) {
+        super(message);
+    }
 }
