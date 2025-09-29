@@ -31,6 +31,7 @@ public class PGPCertificateDirectory
     final Backend backend;
     final SubkeyLookup subkeyLookup;
     private final Pattern openPgpV4FingerprintPattern = Pattern.compile("^[a-f0-9]{40}$");
+    private final Pattern openPgpV6FingerprintPattern = Pattern.compile("^[a-f0-9]{64}$");
 
     /**
      * Constructor for a PGP certificate directory.
@@ -45,7 +46,8 @@ public class PGPCertificateDirectory
 
     @Override
     public Certificate getByFingerprint(String fingerprint) throws BadDataException, BadNameException, IOException {
-        if (!openPgpV4FingerprintPattern.matcher(fingerprint).matches()) {
+        if (!openPgpV4FingerprintPattern.matcher(fingerprint).matches() &&
+                !openPgpV6FingerprintPattern.matcher(fingerprint).matches()) {
             throw new BadNameException();
         }
         Certificate certificate = backend.readByFingerprint(fingerprint);
