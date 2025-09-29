@@ -7,6 +7,7 @@ SPDX-License-Identifier: CC0-1.0
 
 ## 0.2.4-SNAPSHOT
 - Add constructor parameters to `BadDataException`
+- Add support for OpenPGP v6 fingerprints
 
 ## 0.2.3
 - Bump Bouncy Castle to `1.82` and switch to `jdk18on`-variants
