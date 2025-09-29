@@ -9,6 +9,7 @@ package pgp.certificate_store.exception;
  */
 public class BadNameException extends Exception {
 
+    @Deprecated // pass message
     public BadNameException() {
         super();
     }

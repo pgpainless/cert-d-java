@@ -9,6 +9,7 @@ package pgp.certificate_store.exception;
  */
 public class NotAStoreException extends Exception {
 
+    @Deprecated // pass message
     public NotAStoreException() {
         super();
     }
