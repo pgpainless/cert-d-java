@@ -48,11 +48,11 @@ public class PGPCertificateDirectory
     public Certificate getByFingerprint(String fingerprint) throws BadDataException, BadNameException, IOException {
         if (!openPgpV4FingerprintPattern.matcher(fingerprint).matches() &&
                 !openPgpV6FingerprintPattern.matcher(fingerprint).matches()) {
-            throw new BadNameException();
+            throw new BadNameException("Queried fingerprint '" + fingerprint + "' does neither match OpenPGP v4 nor OpenPGP v6 format.");
         }
         Certificate certificate = backend.readByFingerprint(fingerprint);
         if (certificate == null) {
-            throw new NoSuchElementException();
+            throw new NoSuchElementException("No certificate with fingerprint '" + fingerprint + "' found.");
         }
         return certificate;
     }
@@ -74,7 +74,7 @@ public class PGPCertificateDirectory
         if (keyMaterial != null) {
             return keyMaterial.asCertificate();
         }
-        throw new NoSuchElementException();
+        throw new NoSuchElementException("No certificate with special name '" + specialName + "' found.");
     }
 
     @Override
@@ -131,7 +131,7 @@ public class PGPCertificateDirectory
         try {
             KeyMaterial keyMaterial = backend.readBySpecialName(SpecialNames.TRUST_ROOT);
             if (keyMaterial == null) {
-                throw new NoSuchElementException();
+                throw new NoSuchElementException("No trust-root found.");
             }
             return keyMaterial;
         } catch (BadNameException e) {
