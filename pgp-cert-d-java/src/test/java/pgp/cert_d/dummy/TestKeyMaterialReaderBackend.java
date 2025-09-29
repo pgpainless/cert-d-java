@@ -43,7 +43,7 @@ public class TestKeyMaterialReaderBackend implements KeyMaterialReaderBackend {
             try {
                 return readCertificate(new ByteArrayInputStream(out.toByteArray()), tag);
             } catch (IOException e1) {
-                throw new BadDataException();
+                throw new BadDataException("Cannot read certificate", e1);
             }
         }
     }

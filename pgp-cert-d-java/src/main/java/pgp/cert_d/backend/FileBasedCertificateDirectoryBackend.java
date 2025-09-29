@@ -181,7 +181,9 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
         Certificate certificate = reader.read(bufferedIn, tag).asCertificate();
         if (!certificate.getFingerprint().equals(fingerprint)) {
             // TODO: Figure out more suitable exception
-            throw new BadDataException();
+            throw new BadDataException("Identified certificate fingerprint does not match queried fingerprint:\n" +
+                    "found: " + certificate.getFingerprint() + "\n" +
+                    "query: " + fingerprint);
         }
 
         return certificate;
@@ -242,7 +244,9 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
                                     long tag = getTag(certFile);
                                     Certificate certificate = reader.read(new FileInputStream(certFile), tag).asCertificate();
                                     if (!(subdirectory.getName() + certFile.getName()).equals(certificate.getFingerprint())) {
-                                        throw new BadDataException();
+                                        throw new BadDataException("Certificate fingerprint does not match file location+name.\n" +
+                                                "Fingerprint: " + certificate.getFingerprint() + "\n" +
+                                                "Location+name: " + subdirectory.getName() + certFile.getName());
                                     }
                                     return certificate;
                                 } catch (IOException e) {
@@ -279,7 +283,7 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
             existingCertificate = readBySpecialName(SpecialNames.TRUST_ROOT);
             certFile = resolver.getCertFileBySpecialName(SpecialNames.TRUST_ROOT);
         } catch (BadNameException e) {
-            throw new BadDataException();
+            throw new BadDataException("Unknown special name '" + SpecialNames.TRUST_ROOT + "'");
         }
 
         if (existingCertificate != null) {
@@ -304,7 +308,7 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
             existingCertificate = readByFingerprint(newCertificate.getFingerprint());
             certFile = resolver.getCertFileByFingerprint(newCertificate.getFingerprint());
         } catch (BadNameException e) {
-            throw new BadDataException();
+            throw new BadDataException("Malformed key fingerprint: " + newCertificate.getFingerprint());
         }
 
         if (existingCertificate != null) {
@@ -324,7 +328,7 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
             existingCertificate = readBySpecialName(specialName);
             certFile = resolver.getCertFileBySpecialName(specialName);
         } catch (BadNameException e) {
-            throw new BadDataException();
+            throw new BadDataException("Unknown special name '" + specialName + "'");
         }
 
         if (existingCertificate != null) {
@@ -349,7 +353,7 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
 
     private Long getTag(File file) throws IOException {
         if (!file.exists()) {
-            throw new NoSuchElementException();
+            throw new NoSuchElementException("File '" + file.getAbsolutePath() + "' does not exist.");
         }
         Path path = file.toPath();
         BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
@@ -409,7 +413,7 @@ public class FileBasedCertificateDirectoryBackend implements PGPCertificateDirec
          */
         public File getCertFileByFingerprint(String fingerprint) throws BadNameException {
             if (!isFingerprint(fingerprint)) {
-                throw new BadNameException();
+                throw new BadNameException("Malformed query fingerprint '" + fingerprint + "'");
             }
 
             // is fingerprint

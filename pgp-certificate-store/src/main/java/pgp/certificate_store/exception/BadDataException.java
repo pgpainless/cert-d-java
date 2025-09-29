@@ -9,6 +9,11 @@ package pgp.certificate_store.exception;
  */
 public class BadDataException extends Exception {
 
+    @Deprecated // pass cause and/or message
+    public BadDataException() {
+        super();
+    }
+
     public BadDataException(Throwable cause) {
         super(cause);
     }
