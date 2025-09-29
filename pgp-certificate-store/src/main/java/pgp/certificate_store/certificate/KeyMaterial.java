@@ -11,8 +11,7 @@ import java.util.Set;
 public interface KeyMaterial {
 
     /**
-     * Return the fingerprint of the certificate as 40 lowercase hex characters.
-     * TODO: Allow OpenPGP V5 fingerprints
+     * Return the fingerprint of the certificate as lowercase hex characters.
      *
      * @return fingerprint
      */
